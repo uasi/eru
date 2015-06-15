@@ -1,0 +1,11 @@
+[package]
+name = "eru"
+version = "0.1.0"
+authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
+
+[dependencies]
+libc = "0.1.8"
+
+[dependencies.ncurses]
+version = "5.73.0"
+default-features = false  # Disable wide support for OS X
