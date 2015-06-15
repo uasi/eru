@@ -16,8 +16,8 @@ pub struct State {
 
 pub enum StateInput {
     EmitUpdateScreen,
+    PutChunk(Vec<String>),
     PutKey(Key),
-    PutLine(String),
 }
 
 pub enum StateReply {
@@ -87,8 +87,8 @@ impl State {
                 self.highlight_index = cmp::min(self.highlight_index, cmp::max(num_items, 1) - 1);
                 UpdateScreen(self.get_screen_data())
             }
-            PutLine(line) => {
-                self.line_storage.put_line(line);
+            PutChunk(chunk) => {
+                self.line_storage.put_chunk(chunk);
                 UpdateScreen(self.get_screen_data())
             }
         }
@@ -151,7 +151,9 @@ impl LineStorage {
             .collect()
     }
 
-    pub fn put_line(&mut self, line: String) {
-        self.lines.push(Arc::new(line));
+    pub fn put_chunk(&mut self, chunk: Vec<String>) {
+        for line in chunk {
+            self.lines.push(Arc::new(line));
+        }
     }
 }

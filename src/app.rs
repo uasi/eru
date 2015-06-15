@@ -34,7 +34,7 @@ impl App {
 
         let config = self.config.clone();
         spawn_with_name("reader", move || {
-            let reader = Reader::new(config.input_source());
+            let reader = Reader::new(config);
             reader.start(reader_tx);
         });
 

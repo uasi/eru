@@ -97,12 +97,8 @@ impl Coordinator {
         use reader::ReaderEvent::*;
         use state::StateInput;
         match event {
-            DidReadLine(line) => {
-                let _dont_care = self.state_input_tx.send(StateInput::PutLine(line)).is_ok();
-            }
-            WillFinish => {
-            }
-            WillDie => {
+            DidReadChunk(chunk) => {
+                let _dont_care = self.state_input_tx.send(StateInput::PutChunk(chunk)).is_ok();
             }
         }
     }
