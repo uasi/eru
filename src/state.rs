@@ -105,6 +105,9 @@ impl State {
             self.highlighted_row = 0;
             return;
         }
+        if self.highlighted_row >= num_items - 1 {
+            return;
+        }
         if self.highlighted_row >= self.screen.list_view_height() - 1 {
             self.scroll_item_list_forward();
             return;
