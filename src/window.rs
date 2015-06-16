@@ -33,6 +33,10 @@ impl Window {
     pub fn noutrefresh(&self) {
         nc::wnoutrefresh(self.win);
     }
+
+    pub fn rect(&self) -> Rect {
+        self.rect
+    }
 }
 
 pub trait WindowImpl {
@@ -45,7 +49,7 @@ impl WindowImpl for Gutter {
     fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
         // TODO: shift
         if sd.items.len() > 0 {
-            let i = cmp::min(sd.highlight_index as i32, r.height);
+            let i = cmp::min(sd.highlighted_row as i32, r.height);
             nc::mvwaddstr(win, i as i32, 0, ">");
         }
     }
@@ -58,8 +62,6 @@ impl WindowImpl for MiniBuf {
         nc::mvwaddstr(win, 0, 0, sd.query_string.as_ref());
     }
 }
-
-pub struct ListView;
 
 impl MiniBuf {
     pub fn set_cursor(win: &Window, cursor_index: i32) {
@@ -76,11 +78,13 @@ impl MiniBuf {
     }
 }
 
+pub struct ListView;
+
 // TODO: shift
 impl WindowImpl for ListView {
     fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
         let num_lines = cmp::min(sd.items.len(), r.height as usize);
-        for (y, item) in sd.items.iter().take(num_lines).enumerate() {
+        for (y, item) in sd.items.iter().skip(sd.item_index).take(num_lines).enumerate() {
             nc::mvwaddstr(win, y as i32, 0, item.string.as_ref()); // TODO: truncate line
         }
     }

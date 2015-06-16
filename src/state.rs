@@ -9,7 +9,8 @@ use screen::Screen;
 use screen_data::ScreenData;
 
 pub struct State {
-    highlight_index: usize,
+    highlighted_row: usize,
+    item_index: usize,
     last_screen_data: Option<ScreenData>,
     line_storage: LineStorage,
     query_editor: QueryEditor,
@@ -28,7 +29,8 @@ pub enum StateReply {
 impl State {
     pub fn new(screen: Screen) -> Self {
         State {
-            highlight_index: 0,
+            highlighted_row: 0,
+            item_index: 0,
             last_screen_data: None,
             line_storage: LineStorage::new(),
             query_editor: QueryEditor::new(),
@@ -57,36 +59,22 @@ impl State {
         match input {
             PutKey(Key::CtrlM) => {
                 let sd = self.get_screen_data();
-                return Some(Complete(sd.items.get(self.highlight_index).and_then(|i| Some(vec![i.string.clone()]))));
+                return Some(Complete(sd.items.get(self.item_index+self.highlighted_row).and_then(|i| Some(vec![i.string.clone()]))));
             }
             PutKey(Key::CtrlN) => {
-                let num_items = match self.last_screen_data {
-                    Some(ref sd) => sd.items.len(),
-                    None         => self.line_storage.lines.len(),
-                };
-                self.highlight_index = match num_items {
-                    0 => 0,
-                    _ => cmp::min(self.highlight_index + 1, num_items - 1),
-                };
+                self.move_highlight_forward();
                 let sd = self.get_screen_data();
                 self.screen.update(sd);
             }
             PutKey(Key::CtrlP) => {
-                let num_items = match self.last_screen_data {
-                    Some(ref sd) => sd.items.len(),
-                    None         => self.line_storage.lines.len(),
-                };
-                self.highlight_index = match num_items {
-                    0 => 0,
-                    _ => cmp::min(cmp::max(self.highlight_index, 1) - 1, num_items - 1),
-                };
+                self.move_highlight_backward();
                 let sd = self.get_screen_data();
                 self.screen.update(sd);
             }
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 let num_items = self.get_screen_data().items.len();
-                self.highlight_index = cmp::min(self.highlight_index, cmp::max(num_items, 1) - 1);
+                self.highlighted_row = cmp::min(self.highlighted_row, cmp::max(num_items, 1) - 1);
                 let sd = self.get_screen_data();
                 self.screen.update(sd);
             }
@@ -99,10 +87,59 @@ impl State {
         None
     }
 
+    fn move_highlight_backward(&mut self) {
+        let num_items = match self.last_screen_data {
+            Some(ref sd) => sd.items.len(),
+            None         => self.line_storage.lines.len(),
+        };
+        if num_items == 0 {
+            self.highlighted_row = 0;
+            return;
+        }
+        if self.highlighted_row == 0 {
+            self.scroll_item_list_backward();
+            return;
+        }
+        self.highlighted_row -= 1;
+    }
+
+    fn move_highlight_forward(&mut self) {
+        let num_items = match self.last_screen_data {
+            Some(ref sd) => sd.items.len(),
+            None         => self.line_storage.lines.len(),
+        };
+        if num_items == 0 {
+            self.highlighted_row = 0;
+            return;
+        }
+        if self.highlighted_row >= self.screen.list_view_height() - 1 {
+            self.scroll_item_list_forward();
+            return;
+        }
+        self.highlighted_row += 1;
+    }
+
+    fn scroll_item_list_backward(&mut self) {
+        if self.item_index > 0 {
+            self.item_index -= 1;
+        }
+    }
+
+    fn scroll_item_list_forward(&mut self) {
+        let num_items = match self.last_screen_data {
+            Some(ref sd) => sd.items.len(),
+            None         => self.line_storage.lines.len(),
+        };
+        if self.item_index + self.screen.list_view_height() < num_items {
+            self.item_index += 1;
+        }
+    }
+
     fn get_screen_data(&mut self) -> ScreenData {
         let sd = ScreenData {
             cursor_index: self.query_editor.cursor_position(),
-            highlight_index: self.highlight_index,
+            highlighted_row: self.highlighted_row,
+            item_index: self.item_index,
             items: self.get_items(),
             query_string: self.get_query_string(),
             total_lines: self.line_storage.lines.len(),

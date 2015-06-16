@@ -35,6 +35,10 @@ impl Screen {
         MiniBuf::set_cursor(&self.mini_buf, sd.cursor_index as i32);
         nc::doupdate();
     }
+
+    pub fn list_view_height(&self) -> usize {
+        self.list_view.rect().height as usize
+    }
 }
 
 struct Layout {
