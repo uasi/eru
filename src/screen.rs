@@ -1,14 +1,8 @@
 use ncurses as nc;
 
-use std::sync::mpsc::Receiver;
-
 use screen_data::ScreenData;
 use window::{Rect, Window};
 use window::{Gutter, ListView, MiniBuf, StatusLine};
-
-pub enum ScreenEvent {
-    Update(ScreenData),
-}
 
 pub struct Screen {
     gutter: Window,
@@ -32,17 +26,7 @@ impl Screen {
         }
     }
 
-    pub fn start(&self, rx: Receiver<ScreenEvent>) {
-        use self::ScreenEvent::*;
-        loop {
-            match rx.recv() {
-                Ok(Update(sd)) => self.update(sd),
-                Err(_)     => break,
-            }
-        }
-    }
-
-    fn update(&self, sd: ScreenData) {
+    pub fn update(&self, sd: ScreenData) {
         for win in [&self.gutter, &self.list_view, &self.mini_buf, &self.status_line].iter() {
             win.clear();
             win.draw(&sd);

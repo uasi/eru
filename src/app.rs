@@ -23,7 +23,6 @@ impl App {
     pub fn start(self) -> Option<Vec<Arc<String>>> {
         let (commander_tx, commander_rx) = channel();
         let (reader_tx, reader_rx) = channel();
-        let (screen_tx, screen_rx) = channel();
         let (state_input_tx, state_input_rx) = channel();
         let (state_reply_tx, state_reply_rx) = channel();
 
@@ -38,20 +37,14 @@ impl App {
             reader.start(reader_tx);
         });
 
-        spawn_with_name("screen", move || {
-            let screen = Screen::new();
-            screen.start(screen_rx);
-        });
-
         spawn_with_name("state", move || {
-            let state = State::new();
+            let state = State::new(Screen::new());
             state.start(state_input_rx, state_reply_tx);
         });
 
         let coordinator = Coordinator::new(
             commander_rx,
             reader_rx,
-            screen_tx,
             state_input_tx,
             state_reply_rx,
         );

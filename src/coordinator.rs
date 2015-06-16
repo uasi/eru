@@ -4,7 +4,6 @@ use std::thread;
 
 use commander::CommanderEvent;
 use reader::ReaderEvent;
-use screen::ScreenEvent;
 use state::{StateInput, StateReply};
 
 const POLLING_INTERVAL_MS: u32 = 10;
@@ -17,7 +16,6 @@ enum LoopCond {
 pub struct Coordinator {
     commander_rx: Receiver<CommanderEvent>,
     reader_rx: Receiver<ReaderEvent>,
-    screen_tx: Sender<ScreenEvent>,
     state_input_tx: Sender<StateInput>,
     state_reply_rx: Receiver<StateReply>,
 }
@@ -26,7 +24,6 @@ impl Coordinator {
     pub fn new(
         commander_rx: Receiver<CommanderEvent>,
         reader_rx: Receiver<ReaderEvent>,
-        screen_tx: Sender<ScreenEvent>,
         state_input_tx: Sender<StateInput>,
         state_reply_rx: Receiver<StateReply>,
     ) -> Self
@@ -34,7 +31,6 @@ impl Coordinator {
         Coordinator {
             commander_rx: commander_rx,
             reader_rx: reader_rx,
-            screen_tx: screen_tx,
             state_input_tx: state_input_tx,
             state_reply_rx: state_reply_rx,
         }
@@ -42,7 +38,6 @@ impl Coordinator {
 
     pub fn start(self) -> Option<Vec<Arc<String>>> {
         use std::sync::mpsc::TryRecvError::Empty;
-        let _dont_care = self.state_input_tx.send(StateInput::EmitUpdateScreen).is_ok();
         'EVENT_LOOP: loop {
             loop {
                 match self.commander_rx.try_recv() {
@@ -63,18 +58,13 @@ impl Coordinator {
                     Err(_)     => panic!("reader terminated unexpectedly"),
                 }
             }
-            let mut screen_data = None;
             loop {
                 use state::StateReply::*;
                 match self.state_reply_rx.try_recv() {
-                    Ok(UpdateScreen(sd)) => { screen_data = Some(sd); }
                     Ok(Complete(lines))  => { return lines; }
                     Err(Empty)           => break,
                     Err(_)               => panic!("state terminated unexpectedly"),
                 }
-            }
-            if let Some(sd) = screen_data {
-                self.screen_tx.send(::screen::ScreenEvent::Update(sd)).is_ok() || break 'EVENT_LOOP;
             }
             thread::sleep_ms(POLLING_INTERVAL_MS);
         }

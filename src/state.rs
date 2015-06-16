@@ -5,6 +5,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use item::Item;
 use key::Key;
 use query::{Query, QueryEditor};
+use screen::Screen;
 use screen_data::ScreenData;
 
 pub struct State {
@@ -12,26 +13,26 @@ pub struct State {
     last_screen_data: Option<ScreenData>,
     line_storage: LineStorage,
     query_editor: QueryEditor,
+    screen: Screen,
 }
 
 pub enum StateInput {
-    EmitUpdateScreen,
     PutChunk(Vec<String>),
     PutKey(Key),
 }
 
 pub enum StateReply {
     Complete(Option<Vec<Arc<String>>>),
-    UpdateScreen(ScreenData),
 }
 
 impl State {
-    pub fn new() -> Self {
+    pub fn new(screen: Screen) -> Self {
         State {
             highlight_index: 0,
             last_screen_data: None,
             line_storage: LineStorage::new(),
             query_editor: QueryEditor::new(),
+            screen: screen,
         }
     }
 
@@ -40,24 +41,23 @@ impl State {
             match input_rx.recv() {
                 Ok(input) => {
                     let reply = self.process_input(input);
-                    reply_tx.send(reply).is_ok() || break;
+                    if let Some(reply) = reply {
+                        reply_tx.send(reply).is_ok() || break;
+                    }
                 }
                 Err(_) => break,
             }
         }
     }
 
-    fn process_input(&mut self, input: StateInput) -> StateReply {
+    fn process_input(&mut self, input: StateInput) -> Option<StateReply> {
         use key::Key;
         use self::StateInput::*;
         use self::StateReply::*;
         match input {
-            EmitUpdateScreen => {
-                UpdateScreen(self.get_screen_data())
-            }
             PutKey(Key::CtrlM) => {
                 let sd = self.get_screen_data();
-                Complete(sd.items.get(self.highlight_index).and_then(|i| Some(vec![i.string.clone()])))
+                return Some(Complete(sd.items.get(self.highlight_index).and_then(|i| Some(vec![i.string.clone()]))));
             }
             PutKey(Key::CtrlN) => {
                 let num_items = match self.last_screen_data {
@@ -68,7 +68,8 @@ impl State {
                     0 => 0,
                     _ => cmp::min(self.highlight_index + 1, num_items - 1),
                 };
-                UpdateScreen(self.get_screen_data())
+                let sd = self.get_screen_data();
+                self.screen.update(sd);
             }
             PutKey(Key::CtrlP) => {
                 let num_items = match self.last_screen_data {
@@ -79,19 +80,23 @@ impl State {
                     0 => 0,
                     _ => cmp::min(cmp::max(self.highlight_index, 1) - 1, num_items - 1),
                 };
-                UpdateScreen(self.get_screen_data())
+                let sd = self.get_screen_data();
+                self.screen.update(sd);
             }
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 let num_items = self.get_screen_data().items.len();
                 self.highlight_index = cmp::min(self.highlight_index, cmp::max(num_items, 1) - 1);
-                UpdateScreen(self.get_screen_data())
+                let sd = self.get_screen_data();
+                self.screen.update(sd);
             }
             PutChunk(chunk) => {
                 self.line_storage.put_chunk(chunk);
-                UpdateScreen(self.get_screen_data())
+                let sd = self.get_screen_data();
+                self.screen.update(sd);
             }
         }
+        None
     }
 
     fn get_screen_data(&mut self) -> ScreenData {
