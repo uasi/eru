@@ -9,11 +9,11 @@ use thread_util::spawn_with_name;
 const DUMP_INTERVAL_MS: u32 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
 
 pub enum ReaderEvent {
-    DidReadChunk(Vec<String>),
+    DidReadChunk(Vec<Arc<String>>),
 }
 
 pub struct Reader {
-    chunk: Arc<Mutex<Vec<String>>>,
+    chunk: Arc<Mutex<Vec<Arc<String>>>>,
     reader: thread::JoinHandle<()>,
 }
 
@@ -42,7 +42,7 @@ impl Reader {
     }
 }
 
-fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<String>>>) -> thread::JoinHandle<()> {
+fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<String>>>>) -> thread::JoinHandle<()> {
     spawn_with_name("reader::reader", move || {
         thread::park();
         let mut buf_reader = BufReader::new(config.input_source());
@@ -53,7 +53,7 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<String>>>) -> thread
                 Ok(_) if buf.len() > 0 => {
                     buf.pop().unwrap(); // chomp newline
                     let mut chunk = chunk.lock().unwrap();
-                    chunk.push(buf);
+                    chunk.push(Arc::new(buf));
                     drop(chunk);
                 }
                 Ok(_) => {

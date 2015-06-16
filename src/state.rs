@@ -18,7 +18,7 @@ pub struct State {
 }
 
 pub enum StateInput {
-    PutChunk(Vec<String>),
+    PutChunk(Vec<Arc<String>>),
     PutKey(Key),
 }
 
@@ -193,9 +193,7 @@ impl LineStorage {
             .collect()
     }
 
-    pub fn put_chunk(&mut self, chunk: Vec<String>) {
-        for line in chunk {
-            self.lines.push(Arc::new(line));
-        }
+    pub fn put_chunk(&mut self, chunk: Vec<Arc<String>>) {
+        self.lines.extend(chunk);
     }
 }
