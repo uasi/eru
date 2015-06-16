@@ -59,7 +59,7 @@ pub struct MiniBuf;
 
 impl WindowImpl for MiniBuf {
     fn draw(&self, win: nc::WINDOW, _r: Rect, sd: &ScreenData) {
-        nc::mvwaddstr(win, 0, 0, sd.query_string.as_ref());
+        nc::mvwaddstr(win, 0, 0, &*sd.query_string);
     }
 }
 

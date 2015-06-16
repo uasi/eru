@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::cmp;
 use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender};
@@ -11,7 +12,8 @@ use screen_data::ScreenData;
 pub struct State {
     highlighted_row: usize,
     item_index: usize,
-    last_screen_data: Option<ScreenData>,
+    last_items: RefCell<Arc<Vec<Item>>>,
+    last_query_string: RefCell<Option<String>>,
     line_storage: LineStorage,
     query_editor: QueryEditor,
     screen: Screen,
@@ -31,7 +33,8 @@ impl State {
         State {
             highlighted_row: 0,
             item_index: 0,
-            last_screen_data: None,
+            last_items: RefCell::new(Arc::new(Vec::new())),
+            last_query_string: RefCell::new(None),
             line_storage: LineStorage::new(),
             query_editor: QueryEditor::new(),
             screen: screen,
@@ -63,35 +66,28 @@ impl State {
             }
             PutKey(Key::CtrlN) => {
                 self.move_highlight_forward();
-                let sd = self.get_screen_data();
-                self.screen.update(sd);
+                self.screen.update(self.get_screen_data());
             }
             PutKey(Key::CtrlP) => {
                 self.move_highlight_backward();
-                let sd = self.get_screen_data();
-                self.screen.update(sd);
+                self.screen.update(self.get_screen_data());
             }
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 let num_items = self.get_screen_data().items.len();
                 self.highlighted_row = cmp::min(self.highlighted_row, cmp::max(num_items, 1) - 1);
-                let sd = self.get_screen_data();
-                self.screen.update(sd);
+                self.screen.update(self.get_screen_data());
             }
             PutChunk(chunk) => {
                 self.line_storage.put_chunk(chunk);
-                let sd = self.get_screen_data();
-                self.screen.update(sd);
+                self.screen.update(self.get_screen_data());
             }
         }
         None
     }
 
     fn move_highlight_backward(&mut self) {
-        let num_items = match self.last_screen_data {
-            Some(ref sd) => sd.items.len(),
-            None         => self.line_storage.lines.len(),
-        };
+        let num_items = self.get_items().len();
         if num_items == 0 {
             self.highlighted_row = 0;
             return;
@@ -104,10 +100,7 @@ impl State {
     }
 
     fn move_highlight_forward(&mut self) {
-        let num_items = match self.last_screen_data {
-            Some(ref sd) => sd.items.len(),
-            None         => self.line_storage.lines.len(),
-        };
+        let num_items = self.get_items().len();
         if num_items == 0 {
             self.highlighted_row = 0;
             return;
@@ -126,47 +119,34 @@ impl State {
     }
 
     fn scroll_item_list_forward(&mut self) {
-        let num_items = match self.last_screen_data {
-            Some(ref sd) => sd.items.len(),
-            None         => self.line_storage.lines.len(),
-        };
+        let num_items = self.get_items().len();
         if self.item_index + self.screen.list_view_height() < num_items {
             self.item_index += 1;
         }
     }
 
-    fn get_screen_data(&mut self) -> ScreenData {
-        let sd = ScreenData {
+    fn get_screen_data(&self) -> ScreenData {
+        ScreenData {
             cursor_index: self.query_editor.cursor_position(),
             highlighted_row: self.highlighted_row,
             item_index: self.item_index,
             items: self.get_items(),
-            query_string: self.get_query_string(),
+            query_string: Arc::new(self.query_editor.as_ref().to_string()),
             total_lines: self.line_storage.lines.len(),
-        };
-        self.last_screen_data = Some(sd.clone());
-        sd
+        }
     }
 
     fn get_items(&self) -> Arc<Vec<Item>> {
-        if let Some(ref last) = self.last_screen_data {
-            if last.total_lines == self.line_storage.lines.len()
-                && &*last.query_string == self.query_editor.as_str()
-            {
-                return last.items.clone();
-            }
+        let last_qs = self.last_query_string.borrow();
+        if last_qs.is_some() && last_qs.as_ref().unwrap() == self.query_editor.as_ref() {
+            return self.last_items.borrow().clone();
         }
+        drop(last_qs);
         let query = self.query_editor.query();
-        Arc::new(self.line_storage.find(&query))
-    }
-
-    fn get_query_string(&self) -> Arc<String> {
-        if let Some(ref last) = self.last_screen_data {
-            if &*last.query_string == self.query_editor.as_str() {
-                return last.query_string.clone()
-            }
-        }
-        Arc::new(self.query_editor.as_ref().to_string())
+        let items = Arc::new(self.line_storage.find(&query));
+        *self.last_items.borrow_mut() = items.clone();
+        *self.last_query_string.borrow_mut() = Some(self.query_editor.as_ref().to_string());
+        items
     }
 }
 

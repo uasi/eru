@@ -97,10 +97,6 @@ impl QueryEditor {
     pub fn query(&self) -> Query {
         Query::new(self.string.clone())
     }
-
-    pub fn as_str(&self) -> &str {
-        &self.string
-    }
 }
 
 impl AsRef<str> for QueryEditor {
