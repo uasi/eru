@@ -1,5 +1,7 @@
 use ncurses as nc;
+use std::ffi::CString;
 
+use libc_aux;
 use screen_data::ScreenData;
 use window::{Rect, Window};
 use window::{Gutter, ListView, MiniBuf, StatusLine};
@@ -96,6 +98,8 @@ impl Layout {
 }
 
 pub fn initialize() {
+    let s = CString::new("").unwrap();
+    unsafe { libc_aux::setlocale(libc_aux::LC_ALL, s.as_ptr()); }
     nc::initscr();
     nc::cbreak();
     nc::noecho();

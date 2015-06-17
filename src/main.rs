@@ -7,6 +7,7 @@ mod config;
 mod coordinator;
 mod item;
 mod key;
+mod libc_aux;
 mod pattern;
 mod query;
 mod reader;
