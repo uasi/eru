@@ -1,11 +1,12 @@
 use std::cell::RefCell;
 use std::cmp;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
 use item::Item;
 use key::Key;
-use query::{Query, QueryEditor};
+use line_storage::LineStorage;
+use query::QueryEditor;
 use screen::Screen;
 use screen_data::ScreenData;
 
@@ -14,14 +15,14 @@ pub struct State {
     item_index: usize,
     last_items: RefCell<Arc<Vec<Item>>>,
     last_query_string: RefCell<Option<String>>,
-    line_storage: LineStorage,
+    line_storage: Arc<RwLock<LineStorage>>,
     query_editor: QueryEditor,
     screen: Screen,
 }
 
 pub enum StateInput {
-    PutChunk(Vec<Arc<String>>),
     PutKey(Key),
+    UpdateScreen,
 }
 
 pub enum StateReply {
@@ -29,13 +30,13 @@ pub enum StateReply {
 }
 
 impl State {
-    pub fn new(screen: Screen) -> Self {
+    pub fn new(line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
         State {
             highlighted_row: 0,
             item_index: 0,
             last_items: RefCell::new(Arc::new(Vec::new())),
             last_query_string: RefCell::new(None),
-            line_storage: LineStorage::new(),
+            line_storage: line_storage,
             query_editor: QueryEditor::new(),
             screen: screen,
         }
@@ -78,8 +79,7 @@ impl State {
                 self.highlighted_row = cmp::min(self.highlighted_row, cmp::max(num_items, 1) - 1);
                 self.screen.update(self.get_screen_data());
             }
-            PutChunk(chunk) => {
-                self.line_storage.put_chunk(chunk);
+            UpdateScreen => {
                 self.screen.update(self.get_screen_data());
             }
         }
@@ -135,7 +135,7 @@ impl State {
             item_index: self.item_index,
             items: self.get_items(),
             query_string: Arc::new(self.query_editor.as_ref().to_string()),
-            total_lines: self.line_storage.lines.len(),
+            total_lines: self.line_storage.read().unwrap().len(),
         }
     }
 
@@ -146,37 +146,9 @@ impl State {
         }
         drop(last_qs);
         let query = self.query_editor.query();
-        let items = Arc::new(self.line_storage.find(&query));
+        let items = Arc::new(self.line_storage.read().unwrap().find(&query));
         *self.last_items.borrow_mut() = items.clone();
         *self.last_query_string.borrow_mut() = Some(self.query_editor.as_ref().to_string());
         items
-    }
-}
-
-pub struct LineStorage {
-    lines: Vec<Arc<String>>,
-}
-
-impl LineStorage {
-    pub fn new() -> Self {
-        LineStorage {
-            lines: Vec::new(),
-        }
-    }
-
-    pub fn find(&self, query: &Query) -> Vec<Item> {
-        self.lines.iter()
-            .filter_map(|line| {
-                if query.test(line) {
-                    Some(Item::new(line.clone()))
-                } else {
-                    None
-                }
-            })
-            .collect()
-    }
-
-    pub fn put_chunk(&mut self, chunk: Vec<Arc<String>>) {
-        self.lines.extend(chunk);
     }
 }

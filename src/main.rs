@@ -8,6 +8,7 @@ mod coordinator;
 mod item;
 mod key;
 mod libc_aux;
+mod line_storage;
 mod pattern;
 mod query;
 mod reader;

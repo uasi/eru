@@ -87,8 +87,8 @@ impl Coordinator {
         use reader::ReaderEvent::*;
         use state::StateInput;
         match event {
-            DidReadChunk(chunk) => {
-                let _dont_care = self.state_input_tx.send(StateInput::PutChunk(chunk)).is_ok();
+            DidReadChunk => {
+                let _dont_care = self.state_input_tx.send(StateInput::UpdateScreen).is_ok();
             }
         }
     }
