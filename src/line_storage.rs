@@ -19,7 +19,7 @@ impl LineStorage {
         self.lines.iter()
             .filter_map(|line| {
                 match query.test(line) {
-                    true  => Some(Item::new(line.clone())),
+                    true  => Some(line.clone()),
                     false => None,
                 }
             })

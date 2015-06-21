@@ -63,7 +63,7 @@ impl State {
         match input {
             PutKey(Key::CtrlM) => {
                 let sd = self.get_screen_data();
-                return Some(Complete(sd.items.get(self.item_index+self.highlighted_row).and_then(|i| Some(vec![i.string.clone()]))));
+                return Some(Complete(sd.items.get(self.item_index+self.highlighted_row).and_then(|i| Some(vec![i.clone()]))));
             }
             PutKey(Key::CtrlN) => {
                 self.move_highlight_forward();
