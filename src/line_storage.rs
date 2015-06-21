@@ -14,10 +14,6 @@ impl LineStorage {
         }
     }
 
-    pub fn get_all(&self) -> Vec<Item> {
-        self.lines.iter().map(|line| line.clone()).collect()
-    }
-
     pub fn get_many_unchecked(&self, indices: Vec<usize>) -> Vec<Item> {
         indices.iter().map(|i| self.lines[*i].clone()).collect()
     }

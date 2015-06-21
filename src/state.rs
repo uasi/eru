@@ -56,7 +56,9 @@ impl State {
         use self::StateReply::*;
         match input {
             PutKey(Key::CtrlM) => {
-                return Some(Complete(Some(self.item_list.selected_items())));
+                let indices = self.item_list.selected_line_indices();
+                let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
+                return Some(Complete(Some(items)));
             }
             PutKey(Key::CtrlN) => {
                 self.item_list.move_highlight_forward();
@@ -72,13 +74,11 @@ impl State {
                     self.screen.update(self.get_screen_data());
                     return Some(RequestSearch(self.query_editor.query()));
                 }
-                self.item_list.set_items(self.line_storage.read().unwrap().get_all());
+                self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
                 self.screen.update(self.get_screen_data());
             }
             PutSearchResult(line_indices) => {
-                let line_storage = self.line_storage.read().unwrap();
-                let items = line_storage.get_many_unchecked(line_indices);
-                self.item_list.set_items(items);
+                self.item_list.set_line_indices(line_indices);
                 self.screen.update(self.get_screen_data());
             }
             UpdateScreen => {
@@ -86,7 +86,7 @@ impl State {
                     self.screen.update(self.get_screen_data());
                     return Some(RequestSearch(self.query_editor.query()));
                 }
-                self.item_list.set_items(self.line_storage.read().unwrap().get_all());
+                self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
                 self.screen.update(self.get_screen_data());
             }
         }
@@ -94,11 +94,13 @@ impl State {
     }
 
     fn get_screen_data(&self) -> ScreenData {
+        let indices = self.item_list.line_indices_in_clipping_range();
+        let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
         ScreenData {
             cursor_index: self.query_editor.cursor_position(),
             highlighted_row: self.item_list.highlighted_row(),
             item_list_len: self.item_list.len(),
-            items: self.item_list.items_in_clipping_range(),
+            items: items,
             query_string: Arc::new(self.query_editor.as_ref().to_string()),
             total_lines: self.line_storage.read().unwrap().len(),
         }
