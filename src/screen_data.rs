@@ -6,8 +6,8 @@ use item::Item;
 pub struct ScreenData {
     pub cursor_index: usize,
     pub highlighted_row: usize,
-    pub item_index: usize,
-    pub items: Arc<Vec<Item>>,
+    pub item_list_len: usize,
+    pub items: Vec<Item>,
     pub query_string: Arc<String>,
     pub total_lines: usize,
 }

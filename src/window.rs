@@ -84,7 +84,7 @@ pub struct ListView;
 impl WindowImpl for ListView {
     fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
         let num_lines = cmp::min(sd.items.len(), r.height as usize);
-        for (y, item) in sd.items.iter().skip(sd.item_index).take(num_lines).enumerate() {
+        for (y, item) in sd.items.iter().take(num_lines).enumerate() {
             nc::mvwaddstr(win, y as i32, 0, item.as_ref()); // TODO: truncate line
         }
     }
@@ -94,8 +94,7 @@ pub struct StatusLine;
 
 impl WindowImpl for StatusLine {
     fn draw(&self, win: nc::WINDOW, _r: Rect, sd: &ScreenData) {
-        let num_items = sd.items.len();
-        let s = format!("{}/{}", num_items, sd.total_lines);
+        let s = format!("{}/{}", sd.item_list_len, sd.total_lines);
         nc::mvwaddstr(win, 0, 0, &s);
     }
 }

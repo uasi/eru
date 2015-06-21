@@ -4,6 +4,7 @@ use std::thread;
 
 use commander::CommanderEvent;
 use reader::ReaderEvent;
+use searcher::{SearcherInput, SearcherReply};
 use state::{StateInput, StateReply};
 
 const POLLING_INTERVAL_MS: u32 = 10;
@@ -16,6 +17,8 @@ enum LoopCond {
 pub struct Coordinator {
     commander_rx: Receiver<CommanderEvent>,
     reader_rx: Receiver<ReaderEvent>,
+    searcher_input_tx: Sender<SearcherInput>,
+    searcher_reply_rx: Receiver<SearcherReply>,
     state_input_tx: Sender<StateInput>,
     state_reply_rx: Receiver<StateReply>,
 }
@@ -24,6 +27,8 @@ impl Coordinator {
     pub fn new(
         commander_rx: Receiver<CommanderEvent>,
         reader_rx: Receiver<ReaderEvent>,
+        searcher_input_tx: Sender<SearcherInput>,
+        searcher_reply_rx: Receiver<SearcherReply>,
         state_input_tx: Sender<StateInput>,
         state_reply_rx: Receiver<StateReply>,
     ) -> Self
@@ -31,6 +36,8 @@ impl Coordinator {
         Coordinator {
             commander_rx: commander_rx,
             reader_rx: reader_rx,
+            searcher_input_tx: searcher_input_tx,
+            searcher_reply_rx: searcher_reply_rx,
             state_input_tx: state_input_tx,
             state_reply_rx: state_reply_rx,
         }
@@ -59,11 +66,19 @@ impl Coordinator {
                 }
             }
             loop {
+                match self.searcher_reply_rx.try_recv() {
+                    Ok(reply)  => self.process_searcher_reply(reply),
+                    Err(Empty) => break,
+                    Err(_)     => panic!("searcher terminated unexpectedly"),
+                }
+            }
+            loop {
                 use state::StateReply::*;
                 match self.state_reply_rx.try_recv() {
-                    Ok(Complete(lines))  => { return lines; }
-                    Err(Empty)           => break,
-                    Err(_)               => panic!("state terminated unexpectedly"),
+                    Ok(Complete(lines)) => { return lines; }
+                    Ok(reply)           => self.process_state_reply(reply),
+                    Err(Empty)          => break,
+                    Err(_)              => panic!("state terminated unexpectedly"),
                 }
             }
             thread::sleep_ms(POLLING_INTERVAL_MS);
@@ -89,6 +104,26 @@ impl Coordinator {
         match event {
             DidReadChunk => {
                 let _dont_care = self.state_input_tx.send(StateInput::UpdateScreen).is_ok();
+            }
+        }
+    }
+
+    fn process_searcher_reply(&self, reply: SearcherReply) {
+        use searcher::SearcherReply::*;
+        match reply {
+            DidSearch(line_indices) => {
+                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResult(line_indices)).is_ok();
+             }
+        }
+    }
+
+    fn process_state_reply(&self, reply: StateReply) {
+        use state::StateReply::*;
+        use searcher::SearcherInput;
+        match reply {
+            Complete(_) => unreachable!(),
+            RequestSearch(query) => {
+                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(query)).is_ok();
             }
         }
     }

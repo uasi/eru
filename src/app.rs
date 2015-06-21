@@ -7,6 +7,7 @@ use coordinator::Coordinator;
 use line_storage::LineStorage;
 use reader::Reader;
 use screen::Screen;
+use searcher::Searcher;
 use state::State;
 use thread_util::spawn_with_name;
 
@@ -24,6 +25,8 @@ impl App {
     pub fn start(self) -> Option<Vec<Arc<String>>> {
         let (commander_tx, commander_rx) = channel();
         let (reader_tx, reader_rx) = channel();
+        let (searcher_input_tx, searcher_input_rx) = channel();
+        let (searcher_reply_tx, searcher_reply_rx) = channel();
         let (state_input_tx, state_input_rx) = channel();
         let (state_reply_tx, state_reply_rx) = channel();
         let line_storage = Arc::new(RwLock::new(LineStorage::new()));
@@ -41,6 +44,12 @@ impl App {
         });
 
         let line_storage_ = line_storage.clone();
+        spawn_with_name("searcher", move || {
+            let searcher = Searcher::new(line_storage_);
+            searcher.start(searcher_input_rx, searcher_reply_tx);
+        });
+
+        let line_storage_ = line_storage.clone();
         spawn_with_name("state", move || {
             let state = State::new(line_storage_, Screen::new());
             state.start(state_input_rx, state_reply_tx);
@@ -49,6 +58,8 @@ impl App {
         let coordinator = Coordinator::new(
             commander_rx,
             reader_rx,
+            searcher_input_tx,
+            searcher_reply_rx,
             state_input_tx,
             state_reply_rx,
         );

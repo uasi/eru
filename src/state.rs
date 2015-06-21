@@ -1,20 +1,15 @@
-use std::cell::RefCell;
-use std::cmp;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
-use item::Item;
+use item_list::ItemList;
 use key::Key;
 use line_storage::LineStorage;
-use query::QueryEditor;
+use query::{Query, QueryEditor};
 use screen::Screen;
 use screen_data::ScreenData;
 
 pub struct State {
-    highlighted_row: usize,
-    item_index: usize,
-    last_items: RefCell<Arc<Vec<Item>>>,
-    last_query_string: RefCell<Option<String>>,
+    item_list: ItemList,
     line_storage: Arc<RwLock<LineStorage>>,
     query_editor: QueryEditor,
     screen: Screen,
@@ -22,20 +17,19 @@ pub struct State {
 
 pub enum StateInput {
     PutKey(Key),
+    PutSearchResult(Vec<usize>),
     UpdateScreen,
 }
 
 pub enum StateReply {
     Complete(Option<Vec<Arc<String>>>),
+    RequestSearch(Query),
 }
 
 impl State {
     pub fn new(line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
         State {
-            highlighted_row: 0,
-            item_index: 0,
-            last_items: RefCell::new(Arc::new(Vec::new())),
-            last_query_string: RefCell::new(None),
+            item_list: ItemList::new(screen.list_view_height()),
             line_storage: line_storage,
             query_editor: QueryEditor::new(),
             screen: screen,
@@ -62,93 +56,51 @@ impl State {
         use self::StateReply::*;
         match input {
             PutKey(Key::CtrlM) => {
-                let sd = self.get_screen_data();
-                return Some(Complete(sd.items.get(self.item_index+self.highlighted_row).and_then(|i| Some(vec![i.clone()]))));
+                return Some(Complete(Some(self.item_list.selected_items())));
             }
             PutKey(Key::CtrlN) => {
-                self.move_highlight_forward();
+                self.item_list.move_highlight_forward();
                 self.screen.update(self.get_screen_data());
             }
             PutKey(Key::CtrlP) => {
-                self.move_highlight_backward();
+                self.item_list.move_highlight_backward();
                 self.screen.update(self.get_screen_data());
             }
             PutKey(key) => {
                 self.query_editor.put_key(key);
-                let num_items = self.get_screen_data().items.len();
-                self.highlighted_row = cmp::min(self.highlighted_row, cmp::max(num_items, 1) - 1);
+                if self.query_editor.as_ref().len() > 0 {
+                    self.screen.update(self.get_screen_data());
+                    return Some(RequestSearch(self.query_editor.query()));
+                }
+                self.item_list.set_items(self.line_storage.read().unwrap().get_all());
+                self.screen.update(self.get_screen_data());
+            }
+            PutSearchResult(line_indices) => {
+                let line_storage = self.line_storage.read().unwrap();
+                let items = line_storage.get_many_unchecked(line_indices);
+                self.item_list.set_items(items);
                 self.screen.update(self.get_screen_data());
             }
             UpdateScreen => {
+                if self.query_editor.as_ref().len() > 0 {
+                    self.screen.update(self.get_screen_data());
+                    return Some(RequestSearch(self.query_editor.query()));
+                }
+                self.item_list.set_items(self.line_storage.read().unwrap().get_all());
                 self.screen.update(self.get_screen_data());
             }
         }
         None
     }
 
-    fn move_highlight_backward(&mut self) {
-        let num_items = self.get_items().len();
-        if num_items == 0 {
-            self.highlighted_row = 0;
-            return;
-        }
-        if self.highlighted_row == 0 {
-            self.scroll_item_list_backward();
-            return;
-        }
-        self.highlighted_row -= 1;
-    }
-
-    fn move_highlight_forward(&mut self) {
-        let num_items = self.get_items().len();
-        if num_items == 0 {
-            self.highlighted_row = 0;
-            return;
-        }
-        if self.highlighted_row >= num_items - 1 {
-            return;
-        }
-        if self.highlighted_row >= self.screen.list_view_height() - 1 {
-            self.scroll_item_list_forward();
-            return;
-        }
-        self.highlighted_row += 1;
-    }
-
-    fn scroll_item_list_backward(&mut self) {
-        if self.item_index > 0 {
-            self.item_index -= 1;
-        }
-    }
-
-    fn scroll_item_list_forward(&mut self) {
-        let num_items = self.get_items().len();
-        if self.item_index + self.screen.list_view_height() < num_items {
-            self.item_index += 1;
-        }
-    }
-
     fn get_screen_data(&self) -> ScreenData {
         ScreenData {
             cursor_index: self.query_editor.cursor_position(),
-            highlighted_row: self.highlighted_row,
-            item_index: self.item_index,
-            items: self.get_items(),
+            highlighted_row: self.item_list.highlighted_row(),
+            item_list_len: self.item_list.len(),
+            items: self.item_list.items_in_clipping_range(),
             query_string: Arc::new(self.query_editor.as_ref().to_string()),
             total_lines: self.line_storage.read().unwrap().len(),
         }
-    }
-
-    fn get_items(&self) -> Arc<Vec<Item>> {
-        let last_qs = self.last_query_string.borrow();
-        if last_qs.is_some() && last_qs.as_ref().unwrap() == self.query_editor.as_ref() {
-            return self.last_items.borrow().clone();
-        }
-        drop(last_qs);
-        let query = self.query_editor.query();
-        let items = Arc::new(self.line_storage.read().unwrap().find(&query));
-        *self.last_items.borrow_mut() = items.clone();
-        *self.last_query_string.borrow_mut() = Some(self.query_editor.as_ref().to_string());
-        items
     }
 }

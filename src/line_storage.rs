@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use item::Item;
-use query::Query;
 
 #[derive(Clone)]
 pub struct LineStorage {
@@ -15,22 +14,23 @@ impl LineStorage {
         }
     }
 
-    pub fn find(&self, query: &Query) -> Vec<Item> {
-        self.lines.iter()
-            .filter_map(|line| {
-                match query.test(line) {
-                    true  => Some(line.clone()),
-                    false => None,
-                }
-            })
-            .collect()
+    pub fn get_all(&self) -> Vec<Item> {
+        self.lines.iter().map(|line| line.clone()).collect()
     }
 
-    pub fn put_chunk(&mut self, chunk: Vec<Arc<String>>) {
-        self.lines.extend(chunk);
+    pub fn get_many_unchecked(&self, indices: Vec<usize>) -> Vec<Item> {
+        indices.iter().map(|i| self.lines[*i].clone()).collect()
+    }
+
+    pub fn iter<'a>(&'a self) -> ::std::slice::Iter<'a, Arc<String>> {
+        self.lines.iter()
     }
 
     pub fn len(&self) -> usize {
         self.lines.len()
+    }
+
+    pub fn put_chunk(&mut self, chunk: Vec<Arc<String>>) {
+        self.lines.extend(chunk);
     }
 }
