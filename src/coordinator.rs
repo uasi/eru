@@ -48,8 +48,8 @@ impl Coordinator {
         'EVENT_LOOP: loop {
             loop {
                 match self.commander_rx.try_recv() {
-                    Ok(ev) => {
-                        match self.process_commander_event(ev) {
+                    Ok(event) => {
+                        match self.process_commander_event(event) {
                             LoopCond::Continue => (),
                             LoopCond::Break    => break 'EVENT_LOOP,
                         }
@@ -60,7 +60,7 @@ impl Coordinator {
             }
             loop {
                 match self.reader_rx.try_recv() {
-                    Ok(ev)     => self.process_reader_event(ev),
+                    Ok(event)  => self.process_reader_event(event),
                     Err(Empty) => break,
                     Err(_)     => panic!("reader terminated unexpectedly"),
                 }
