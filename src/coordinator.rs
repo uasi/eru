@@ -83,7 +83,7 @@ impl Coordinator {
             }
             thread::sleep_ms(POLLING_INTERVAL_MS);
         }
-        Default::default()
+        None
     }
 
     fn process_commander_event(&self, event: CommanderEvent) -> LoopCond {
