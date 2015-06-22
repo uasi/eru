@@ -111,8 +111,8 @@ impl Coordinator {
     fn process_searcher_reply(&self, reply: SearcherReply) {
         use searcher::SearcherReply::*;
         match reply {
-            DidSearch(query, line_indices, range) => {
-                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResult(query, line_indices, range)).is_ok();
+            DidSearch(response) => {
+                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResponse(response)).is_ok();
              }
         }
     }

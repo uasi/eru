@@ -1,4 +1,3 @@
-use std::ops::Range;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
@@ -6,10 +5,10 @@ use item_list::ItemList;
 use key::Key;
 use line_index_cache::LineIndexCache;
 use line_storage::LineStorage;
-use query::{Query, QueryEditor};
+use query::QueryEditor;
 use screen::Screen;
 use screen_data::ScreenData;
-use search::SearchRequest;
+use search::{SearchRequest, SearchResponse};
 
 pub struct State {
     item_list: ItemList,
@@ -21,7 +20,7 @@ pub struct State {
 
 pub enum StateInput {
     PutKey(Key),
-    PutSearchResult(Query, Vec<usize>, Range<usize>),
+    PutSearchResponse(SearchResponse),
     UpdateScreen,
 }
 
@@ -93,7 +92,9 @@ impl State {
                     self.screen.update(self.get_screen_data());
                 }
             }
-            PutSearchResult(query, line_indices, range) => {
+            PutSearchResponse(response) => {
+                let SearchResponse { query, match_info } = response;
+                let (line_indices, range) = match_info;
                 let query_string = query.as_ref().to_string();
                 self.line_index_cache.put(query_string.clone(), line_indices, range);
                 let &(ref line_indices, end) = self.line_index_cache.get(&query_string).unwrap();

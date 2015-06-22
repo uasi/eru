@@ -1,18 +1,16 @@
 use std::cmp;
-use std::ops::Range;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
 use line_storage::LineStorage;
-use query::Query;
-use search::SearchRequest;
+use search::{SearchRequest, SearchResponse};
 
 pub enum SearcherInput {
     Search(SearchRequest),
 }
 
 pub enum SearcherReply {
-    DidSearch(Query, Vec<usize>, Range<usize>),
+    DidSearch(SearchResponse),
 }
 
 pub struct Searcher {
@@ -48,6 +46,7 @@ impl Searcher {
             }
         }
         let end = cmp::min(start + tests_per_req, line_storage.len());
-        SearcherReply::DidSearch(query, line_indices, start..end)
+        let response = SearchResponse { query: query, match_info: (line_indices, start..end) };
+        SearcherReply::DidSearch(response)
     }
 }
