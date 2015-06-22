@@ -26,7 +26,7 @@ pub enum StateInput {
 
 pub enum StateReply {
     Complete(Option<Vec<Arc<String>>>),
-    RequestSearch(Query, usize),
+    SendSearchRequest(Query, usize),
 }
 
 impl State {
@@ -80,10 +80,10 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            return Some(RequestSearch(self.query_editor.query(), end));
+                            return Some(SendSearchRequest(self.query_editor.query(), end));
                         }
                     } else {
-                        return Some(RequestSearch(self.query_editor.query(), 0));
+                        return Some(SendSearchRequest(self.query_editor.query(), 0));
                     }
                 } else {
                     self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
@@ -97,7 +97,7 @@ impl State {
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
-                    return Some(RequestSearch(query, end));
+                    return Some(SendSearchRequest(query, end));
                 }
             }
             UpdateScreen => {
@@ -107,10 +107,10 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            return Some(RequestSearch(self.query_editor.query(), end));
+                            return Some(SendSearchRequest(self.query_editor.query(), end));
                         }
                     } else {
-                        return Some(RequestSearch(self.query_editor.query(), 0));
+                        return Some(SendSearchRequest(self.query_editor.query(), 0));
                     }
                 } else {
                     self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
