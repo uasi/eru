@@ -111,8 +111,8 @@ impl Coordinator {
     fn process_searcher_reply(&self, reply: SearcherReply) {
         use searcher::SearcherReply::*;
         match reply {
-            DidSearch(line_indices) => {
-                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResult(line_indices)).is_ok();
+            DidSearch(query, line_indices, range) => {
+                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResult(query, line_indices, range)).is_ok();
              }
         }
     }
@@ -122,8 +122,8 @@ impl Coordinator {
         use searcher::SearcherInput;
         match reply {
             Complete(_) => unreachable!(),
-            RequestSearch(query) => {
-                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(query)).is_ok();
+            RequestSearch(query, start) => {
+                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(query, start)).is_ok();
             }
         }
     }

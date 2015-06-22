@@ -1,8 +1,10 @@
+use std::ops::Range;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
 use item_list::ItemList;
 use key::Key;
+use line_index_cache::LineIndexCache;
 use line_storage::LineStorage;
 use query::{Query, QueryEditor};
 use screen::Screen;
@@ -10,6 +12,7 @@ use screen_data::ScreenData;
 
 pub struct State {
     item_list: ItemList,
+    line_index_cache: LineIndexCache,
     line_storage: Arc<RwLock<LineStorage>>,
     query_editor: QueryEditor,
     screen: Screen,
@@ -17,19 +20,20 @@ pub struct State {
 
 pub enum StateInput {
     PutKey(Key),
-    PutSearchResult(Vec<usize>),
+    PutSearchResult(Query, Vec<usize>, Range<usize>),
     UpdateScreen,
 }
 
 pub enum StateReply {
     Complete(Option<Vec<Arc<String>>>),
-    RequestSearch(Query),
+    RequestSearch(Query, usize),
 }
 
 impl State {
     pub fn new(line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
         State {
             item_list: ItemList::new(screen.list_view_height()),
+            line_index_cache: LineIndexCache::new(),
             line_storage: line_storage,
             query_editor: QueryEditor::new(),
             screen: screen,
@@ -71,23 +75,47 @@ impl State {
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 if self.query_editor.as_ref().len() > 0 {
+                    let query_string = self.query_editor.as_ref().to_string();
+                    if let Some(&(ref indices, end)) = self.line_index_cache.get(&query_string) {
+                        self.item_list.set_line_indices(indices.clone());
+                        self.screen.update(self.get_screen_data());
+                        if end != self.line_storage.read().unwrap().len() {
+                            return Some(RequestSearch(self.query_editor.query(), end));
+                        }
+                    } else {
+                        return Some(RequestSearch(self.query_editor.query(), 0));
+                    }
+                } else {
+                    self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
                     self.screen.update(self.get_screen_data());
-                    return Some(RequestSearch(self.query_editor.query()));
                 }
-                self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
-                self.screen.update(self.get_screen_data());
             }
-            PutSearchResult(line_indices) => {
-                self.item_list.set_line_indices(line_indices);
+            PutSearchResult(query, line_indices, range) => {
+                let query_string = query.as_ref().to_string();
+                self.line_index_cache.put(query_string.clone(), line_indices, range);
+                let &(ref line_indices, end) = self.line_index_cache.get(&query_string).unwrap();
+                self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
+                if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
+                    return Some(RequestSearch(query, end));
+                }
             }
             UpdateScreen => {
                 if self.query_editor.as_ref().len() > 0 {
+                    let query_string = self.query_editor.as_ref().to_string();
+                    if let Some(&(ref indices, end)) = self.line_index_cache.get(&query_string) {
+                        self.item_list.set_line_indices(indices.clone());
+                        self.screen.update(self.get_screen_data());
+                        if end != self.line_storage.read().unwrap().len() {
+                            return Some(RequestSearch(self.query_editor.query(), end));
+                        }
+                    } else {
+                        return Some(RequestSearch(self.query_editor.query(), 0));
+                    }
+                } else {
+                    self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
                     self.screen.update(self.get_screen_data());
-                    return Some(RequestSearch(self.query_editor.query()));
                 }
-                self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
-                self.screen.update(self.get_screen_data());
             }
         }
         None
