@@ -52,6 +52,10 @@ impl WindowImpl for Gutter {
             let i = cmp::min(sd.highlighted_row as i32, r.height);
             nc::mvwaddstr(win, i as i32, 0, ">");
         }
+        for row in sd.selected_rows.iter() {
+            let i = cmp::min(*row as i32, r.height);
+            nc::mvwaddstr(win, i as i32, 1, ">");
+        }
     }
 }
 

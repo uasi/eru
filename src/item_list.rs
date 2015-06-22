@@ -1,5 +1,6 @@
 use std::boxed::Box;
 use std::cmp;
+use std::collections::BTreeSet;
 use std::ops::Range;
 
 pub struct ItemList {
@@ -7,6 +8,7 @@ pub struct ItemList {
     clipping_range_start: usize,
     highlighted_row: usize,
     line_indices: Box<Indices>,
+    selected_line_indices: BTreeSet<usize>,
 }
 
 impl ItemList {
@@ -16,6 +18,7 @@ impl ItemList {
             clipping_range_start: 0,
             highlighted_row: 0,
             line_indices: Box::new(0..0),
+            selected_line_indices: BTreeSet::new(),
         }
     }
 
@@ -34,10 +37,37 @@ impl ItemList {
             .collect()
     }
 
-    pub fn selected_line_indices(&self) -> Vec<usize> {
-        match self.len() {
-            0 => Vec::new(),
-            _ => vec![self.clipping_range_start + self.highlighted_row],
+    pub fn selected_or_highlighted_line_indices(&self) -> Vec<usize> {
+        match self.selected_line_indices.len() {
+            0 => {
+                match self.clipping_range_len() {
+                    0 => Vec::new(),
+                    _ => {
+                        let i = self.clipping_range_start + self.highlighted_row;
+                        vec![self.line_indices.at(i)]
+                    }
+                }
+            }
+            _ => self.selected_line_indices.iter().cloned().collect(),
+        }
+    }
+
+    pub fn selected_rows(&self) -> Vec<usize> {
+        self.line_indices_in_clipping_range().iter()
+            .enumerate()
+            .filter_map(|(i, idx)| {
+                if self.selected_line_indices.contains(idx) { Some(i) } else { None }
+            })
+            .collect()
+    }
+
+    pub fn toggle_selection_at_highlighted_row(&mut self) {
+        if self.clipping_range_len() > 0 {
+            let i = self.clipping_range_start + self.highlighted_row;
+            let line_index = self.line_indices.at(i);
+            if !self.selected_line_indices.remove(&line_index) {
+                self.selected_line_indices.insert(line_index);
+            }
         }
     }
 
@@ -113,6 +143,7 @@ impl ItemList {
 }
 
 pub trait Indices {
+    fn at(&self, i: usize) -> usize;
     fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a>;
     fn count(&self) -> usize;
 }
@@ -125,9 +156,17 @@ impl Indices for Range<usize> {
     fn count(&self) -> usize {
         self.clone().count()
     }
+
+    fn at(&self, i: usize) -> usize {
+        i
+    }
 }
 
 impl Indices for Vec<usize> {
+    fn at(&self, i: usize) -> usize {
+        unsafe { *self.get_unchecked(i) }
+    }
+
     fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a> {
         Box::new(self.iter().map(|i| *i))
     }

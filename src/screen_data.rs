@@ -9,5 +9,6 @@ pub struct ScreenData {
     pub item_list_len: usize,
     pub items: Vec<Item>,
     pub query_string: Arc<String>,
+    pub selected_rows: Vec<usize>,
     pub total_lines: usize,
 }

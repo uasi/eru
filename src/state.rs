@@ -59,8 +59,13 @@ impl State {
         use self::StateInput::*;
         use self::StateReply::*;
         match input {
+            PutKey(Key::CtrlI) => {
+                self.item_list.toggle_selection_at_highlighted_row();
+                self.item_list.move_highlight_forward();
+                self.screen.update(self.get_screen_data());
+            }
             PutKey(Key::CtrlM) => {
-                let indices = self.item_list.selected_line_indices();
+                let indices = self.item_list.selected_or_highlighted_line_indices();
                 let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
                 return Some(Complete(Some(items)));
             }
@@ -69,6 +74,11 @@ impl State {
                 self.screen.update(self.get_screen_data());
             }
             PutKey(Key::CtrlP) => {
+                self.item_list.move_highlight_backward();
+                self.screen.update(self.get_screen_data());
+            }
+            PutKey(Key::CtrlZ) => {
+                self.item_list.toggle_selection_at_highlighted_row();
                 self.item_list.move_highlight_backward();
                 self.screen.update(self.get_screen_data());
             }
@@ -137,6 +147,7 @@ impl State {
             item_list_len: self.item_list.len(),
             items: items,
             query_string: Arc::new(self.query_editor.as_ref().to_string()),
+            selected_rows: self.item_list.selected_rows(),
             total_lines: self.line_storage.read().unwrap().len(),
         }
     }
