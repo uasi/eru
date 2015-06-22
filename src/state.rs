@@ -8,7 +8,7 @@ use line_storage::LineStorage;
 use query::QueryEditor;
 use screen::Screen;
 use screen_data::ScreenData;
-use search::{SearchRequest, SearchResponse};
+use search::{MatchInfo, SearchRequest, SearchResponse};
 
 pub struct State {
     item_list: ItemList,
@@ -94,7 +94,7 @@ impl State {
             }
             PutSearchResponse(response) => {
                 let SearchResponse { query, match_info } = response;
-                let (line_indices, range) = match_info;
+                let MatchInfo { line_indices, range } = match_info;
                 let query_string = query.as_ref().to_string();
                 self.line_index_cache.put(query_string.clone(), line_indices, range);
                 let &(ref line_indices, end) = self.line_index_cache.get(&query_string).unwrap();

@@ -46,7 +46,7 @@ impl Searcher {
             }
         }
         let end = cmp::min(start + tests_per_req, line_storage.len());
-        let response = SearchResponse { query: query, match_info: (line_indices, start..end) };
+        let response = SearchResponse::new(query, line_indices, start..end);
         SearcherReply::DidSearch(response)
     }
 }
