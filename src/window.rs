@@ -46,15 +46,14 @@ pub trait WindowImpl {
 pub struct Gutter;
 
 impl WindowImpl for Gutter {
-    fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
-        // TODO: shift
+    fn draw(&self, win: nc::WINDOW, _r: Rect, sd: &ScreenData) {
         if sd.items.len() > 0 {
-            let i = cmp::min(sd.highlighted_row as i32, r.height);
-            nc::mvwaddstr(win, i as i32, 0, ">");
+            let y = sd.highlighted_row as i32;
+            nc::mvwaddstr(win, y, 0, ">");
         }
         for row in sd.selected_rows.iter() {
-            let i = cmp::min(*row as i32, r.height);
-            nc::mvwaddstr(win, i as i32, 1, ">");
+            let y = *row as i32;
+            nc::mvwaddstr(win, y, 1, ">");
         }
     }
 }
