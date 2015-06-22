@@ -5,9 +5,10 @@ use std::sync::mpsc::{Receiver, Sender};
 
 use line_storage::LineStorage;
 use query::Query;
+use search::SearchRequest;
 
 pub enum SearcherInput {
-    Search(Query, usize),
+    Search(SearchRequest),
 }
 
 pub enum SearcherReply {
@@ -29,14 +30,15 @@ impl Searcher {
         loop {
             use self::SearcherInput::*;
             let reply = match input_rx.recv() {
-                Ok(Search(query, start)) => self.search(query, start),
+                Ok(Search(request)) => self.search(request),
                 Err(_) => return,
             };
             let _dont_care = reply_tx.send(reply).is_ok();
         }
     }
 
-    fn search(&self, query: Query, start: usize) -> SearcherReply {
+    fn search(&self, request: SearchRequest) -> SearcherReply {
+        let SearchRequest { query, start } = request;
         let tests_per_req = 5000;
         let mut line_indices = Vec::new();
         let line_storage = self.line_storage.read().unwrap();

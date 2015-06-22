@@ -9,6 +9,7 @@ use line_storage::LineStorage;
 use query::{Query, QueryEditor};
 use screen::Screen;
 use screen_data::ScreenData;
+use search::SearchRequest;
 
 pub struct State {
     item_list: ItemList,
@@ -26,7 +27,7 @@ pub enum StateInput {
 
 pub enum StateReply {
     Complete(Option<Vec<Arc<String>>>),
-    SendSearchRequest(Query, usize),
+    SendSearchRequest(SearchRequest),
 }
 
 impl State {
@@ -80,10 +81,12 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            return Some(SendSearchRequest(self.query_editor.query(), end));
+                            let request = SearchRequest { query: self.query_editor.query(), start: end };
+                            return Some(SendSearchRequest(request));
                         }
                     } else {
-                        return Some(SendSearchRequest(self.query_editor.query(), 0));
+                        let request = SearchRequest { query: self.query_editor.query(), start: 0 };
+                        return Some(SendSearchRequest(request));
                     }
                 } else {
                     self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
@@ -97,7 +100,8 @@ impl State {
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
-                    return Some(SendSearchRequest(query, end));
+                    let request = SearchRequest { query: self.query_editor.query(), start: end };
+                    return Some(SendSearchRequest(request));
                 }
             }
             UpdateScreen => {
@@ -107,10 +111,12 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            return Some(SendSearchRequest(self.query_editor.query(), end));
+                            let request = SearchRequest { query: self.query_editor.query(), start: end };
+                            return Some(SendSearchRequest(request));
                         }
                     } else {
-                        return Some(SendSearchRequest(self.query_editor.query(), 0));
+                        let request = SearchRequest { query: self.query_editor.query(), start: 0 };
+                        return Some(SendSearchRequest(request));
                     }
                 } else {
                     self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());

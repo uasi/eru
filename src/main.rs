@@ -16,6 +16,7 @@ mod query;
 mod reader;
 mod screen;
 mod screen_data;
+mod search;
 mod searcher;
 mod state;
 mod thread_util;

@@ -122,8 +122,8 @@ impl Coordinator {
         use searcher::SearcherInput;
         match reply {
             Complete(_) => unreachable!(),
-            SendSearchRequest(query, start) => {
-                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(query, start)).is_ok();
+            SendSearchRequest(request) => {
+                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(request)).is_ok();
             }
         }
     }
