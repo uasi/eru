@@ -1,5 +1,6 @@
 extern crate libc;
 extern crate ncurses;
+extern crate unicode_width;
 
 mod app;
 mod commander;

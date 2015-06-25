@@ -5,6 +5,7 @@ authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
 
 [dependencies]
 libc = "0.1.8"
+unicode-width = "0.1.1"
 
 [dependencies.ncurses]
 version = "5.73.0"

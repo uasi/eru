@@ -1,5 +1,6 @@
 use ncurses as nc;
 use std::cmp;
+use unicode_width::UnicodeWidthChar;
 
 use screen_data::ScreenData;
 
@@ -83,12 +84,12 @@ impl MiniBuf {
 
 pub struct ListView;
 
-// TODO: shift
 impl WindowImpl for ListView {
     fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
         let num_lines = cmp::min(sd.items.len(), r.height as usize);
         for (y, item) in sd.items.iter().take(num_lines).enumerate() {
-            nc::mvwaddstr(win, y as i32, 0, item.as_ref()); // TODO: truncate line
+            let s = slice_by_width(&item, r.width as usize, false);
+            nc::mvwaddstr(win, y as i32, 0, s);
         }
     }
 }
@@ -108,4 +109,21 @@ pub struct Rect {
     pub width: i32,
     pub y: i32,
     pub x: i32,
+}
+
+fn slice_by_width(s: &str, slice_width: usize, is_cjk: bool) -> &str {
+    let mut bytes = 0;
+    let mut width = 0;
+    for ch in s.chars() {
+        let w = match is_cjk {
+            true  => UnicodeWidthChar::width_cjk(ch).unwrap_or(0),
+            false => UnicodeWidthChar::width(ch).unwrap_or(0),
+        };
+        if width + w > slice_width {
+            break;
+        }
+        width += w;
+        bytes += ch.len_utf8();
+    }
+    &s[..bytes]
 }
