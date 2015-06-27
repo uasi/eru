@@ -26,14 +26,10 @@ mod window;
 use app::App;
 
 fn main() {
-    screen::initialize();
     let app = App::new();
     if let Some(strings) = app.start() {
-        screen::finalize();
         for string in strings {
             println!("{}", string);
         }
-    } else {
-        screen::finalize();
     }
 }

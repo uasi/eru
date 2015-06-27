@@ -6,7 +6,7 @@ use config::Config;
 use coordinator::Coordinator;
 use line_storage::LineStorage;
 use reader::Reader;
-use screen::Screen;
+use screen::{self, Screen};
 use searcher::Searcher;
 use state::State;
 use thread_util::spawn_with_name;
@@ -23,6 +23,8 @@ impl App {
     }
 
     pub fn start(self) -> Option<Vec<Arc<String>>> {
+        screen::initialize();
+
         let (commander_tx, commander_rx) = channel();
         let (reader_tx, reader_rx) = channel();
         let (searcher_input_tx, searcher_input_rx) = channel();
@@ -63,6 +65,9 @@ impl App {
             state_input_tx,
             state_reply_rx,
         );
-        coordinator.start()
+
+        let result = coordinator.start();
+        screen::finalize();
+        result
     }
 }
