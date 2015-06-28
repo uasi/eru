@@ -151,6 +151,7 @@ pub trait Indices {
 
 impl Indices for Range<usize> {
     fn at(&self, i: usize) -> usize {
+        assert!(i < self.end);
         i
     }
 
