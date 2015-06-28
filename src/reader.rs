@@ -4,6 +4,7 @@ use std::sync::mpsc::Sender;
 use std::thread;
 
 use config::Config;
+use line::Line;
 use line_storage::LineStorage;
 use thread_util::spawn_with_name;
 
@@ -14,7 +15,7 @@ pub enum ReaderEvent {
 }
 
 pub struct Reader {
-    chunk: Arc<Mutex<Vec<Arc<String>>>>,
+    chunk: Arc<Mutex<Vec<Arc<Line>>>>,
     reader: thread::JoinHandle<()>,
     line_storage: Arc<RwLock<LineStorage>>,
 }
@@ -47,7 +48,7 @@ impl Reader {
     }
 }
 
-fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<String>>>>) -> thread::JoinHandle<()> {
+fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>) -> thread::JoinHandle<()> {
     spawn_with_name("reader::reader", move || {
         thread::park();
         let mut buf_reader = BufReader::new(config.input_source());
@@ -58,7 +59,7 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<String>>>>) -> t
                 Ok(_) if buf.len() > 0 => {
                     buf.pop().unwrap(); // chomp newline
                     let mut chunk = chunk.lock().unwrap();
-                    chunk.push(Arc::new(buf));
+                    chunk.push(Arc::new(Line(buf)));
                     drop(chunk);
                 }
                 Ok(_) => {

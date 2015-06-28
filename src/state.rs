@@ -3,6 +3,7 @@ use std::sync::mpsc::{Receiver, Sender};
 
 use item_list::ItemList;
 use key::Key;
+use line::Line;
 use line_index_cache::LineIndexCache;
 use line_storage::LineStorage;
 use query::QueryEditor;
@@ -25,7 +26,7 @@ pub enum StateInput {
 }
 
 pub enum StateReply {
-    Complete(Option<Vec<Arc<String>>>),
+    Complete(Option<Vec<Arc<Line>>>),
     SendSearchRequest(SearchRequest),
 }
 

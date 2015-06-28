@@ -4,6 +4,7 @@ use std::sync::mpsc::channel;
 use commander::Commander;
 use config::Config;
 use coordinator::Coordinator;
+use line::Line;
 use line_storage::LineStorage;
 use reader::Reader;
 use screen::{self, Screen};
@@ -22,7 +23,7 @@ impl App {
         }
     }
 
-    pub fn start(self) -> Option<Vec<Arc<String>>> {
+    pub fn start(self) -> Option<Vec<Arc<Line>>> {
         screen::initialize();
 
         let (commander_tx, commander_rx) = channel();

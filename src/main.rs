@@ -10,6 +10,7 @@ mod item;
 mod item_list;
 mod key;
 mod libc_aux;
+mod line;
 mod line_index_cache;
 mod line_storage;
 mod pattern;
@@ -27,9 +28,9 @@ use app::App;
 
 fn main() {
     let app = App::new();
-    if let Some(strings) = app.start() {
-        for string in strings {
-            println!("{}", string);
+    if let Some(lines) = app.start() {
+        for line in lines {
+            println!("{}", line.as_ref());
         }
     }
 }

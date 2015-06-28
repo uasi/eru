@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use item::Item;
+use line::Line;
 
 #[derive(Clone)]
 pub struct LineStorage {
-    lines: Vec<Arc<String>>,
+    lines: Vec<Arc<Line>>,
 }
 
 impl LineStorage {
@@ -18,7 +19,7 @@ impl LineStorage {
         indices.iter().map(|i| self.lines[*i].clone()).collect()
     }
 
-    pub fn iter<'a>(&'a self) -> ::std::slice::Iter<'a, Arc<String>> {
+    pub fn iter<'a>(&'a self) -> ::std::slice::Iter<'a, Arc<Line>> {
         self.lines.iter()
     }
 
@@ -26,7 +27,7 @@ impl LineStorage {
         self.lines.len()
     }
 
-    pub fn put_chunk(&mut self, chunk: Vec<Arc<String>>) {
+    pub fn put_chunk(&mut self, chunk: Vec<Arc<Line>>) {
         self.lines.extend(chunk);
     }
 }

@@ -41,7 +41,7 @@ impl Searcher {
         let mut line_indices = Vec::new();
         let line_storage = self.line_storage.read().unwrap();
         for (i, line) in line_storage.iter().enumerate().skip(start).take(tests_per_req) {
-            if query.test(&line) {
+            if query.test(line.as_ref()) {
                 line_indices.push(i);
             }
         }

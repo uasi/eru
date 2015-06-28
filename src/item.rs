@@ -1,3 +1,5 @@
 use std::sync::Arc;
 
-pub type Item = Arc<String>;
+use line::Line;
+
+pub type Item = Arc<Line>;

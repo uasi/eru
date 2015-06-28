@@ -3,6 +3,7 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 use commander::CommanderEvent;
+use line::Line;
 use reader::ReaderEvent;
 use searcher::{SearcherInput, SearcherReply};
 use state::{StateInput, StateReply};
@@ -43,7 +44,7 @@ impl Coordinator {
         }
     }
 
-    pub fn start(self) -> Option<Vec<Arc<String>>> {
+    pub fn start(self) -> Option<Vec<Arc<Line>>> {
         use std::sync::mpsc::TryRecvError::Empty;
         'EVENT_LOOP: loop {
             loop {
