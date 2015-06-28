@@ -150,16 +150,16 @@ pub trait Indices {
 }
 
 impl Indices for Range<usize> {
+    fn at(&self, i: usize) -> usize {
+        i
+    }
+
     fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a> {
         Box::new(self.clone())
     }
 
     fn count(&self) -> usize {
         self.clone().count()
-    }
-
-    fn at(&self, i: usize) -> usize {
-        i
     }
 }
 
