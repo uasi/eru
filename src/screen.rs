@@ -1,6 +1,7 @@
 use ncurses as nc;
 use std::ffi::CString;
 
+use libc;
 use libc_aux;
 use screen_data::ScreenData;
 use window::{Rect, Window};
@@ -99,7 +100,11 @@ impl Layout {
 
 pub fn initialize() {
     let s = CString::new("").unwrap();
-    unsafe { libc_aux::setlocale(libc_aux::LC_ALL, s.as_ptr()); }
+    unsafe {
+        libc_aux::setlocale(libc_aux::LC_ALL, s.as_ptr());
+        libc::dup2(1, 3);
+        libc::dup2(2, 1);
+    }
     nc::initscr();
     nc::noecho();
     nc::raw();
@@ -107,4 +112,7 @@ pub fn initialize() {
 
 pub fn finalize() {
     nc::endwin();
+    unsafe {
+        libc::dup2(3, 1);
+    }
 }
