@@ -88,7 +88,7 @@ impl ItemList {
     }
 
     pub fn move_highlight_forward(&mut self) {
-        if self.highlighted_row == self.max_row() {
+        if Some(self.highlighted_row) == self.max_row() {
             self.scroll_forward();
             return;
         }
@@ -119,9 +119,10 @@ impl ItemList {
                 self.clipping_range_start -= diff;
             }
         }
-        let max_row = self.max_row();
-        if self.highlighted_row > max_row {
-            self.highlighted_row = max_row;
+        if let Some(max_row) = self.max_row() {
+            if self.highlighted_row > max_row {
+                self.highlighted_row = max_row;
+            }
         }
     }
 
@@ -134,10 +135,10 @@ impl ItemList {
         cmp::min(self.len(), self.clipping_range_max_len)
     }
 
-    fn max_row(&self) -> usize {
+    fn max_row(&self) -> Option<usize> {
         match self.clipping_range_len() {
-            0 => 0,
-            i => i - 1,
+            0 => None,
+            i => Some(i - 1),
         }
     }
 }
