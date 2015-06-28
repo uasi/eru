@@ -101,8 +101,8 @@ pub fn initialize() {
     let s = CString::new("").unwrap();
     unsafe { libc_aux::setlocale(libc_aux::LC_ALL, s.as_ptr()); }
     nc::initscr();
-    nc::cbreak();
     nc::noecho();
+    nc::raw();
 }
 
 pub fn finalize() {

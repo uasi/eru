@@ -60,6 +60,9 @@ impl State {
         use self::StateInput::*;
         use self::StateReply::*;
         match input {
+            PutKey(Key::CtrlC) => {
+                return Some(Complete(None));
+            }
             PutKey(Key::CtrlI) => {
                 self.item_list.toggle_mark();
                 self.item_list.move_highlight_forward();
