@@ -81,11 +81,6 @@ impl State {
                 self.item_list.move_highlight_backward();
                 self.screen.update(self.get_screen_data());
             }
-            PutKey(Key::CtrlZ) => {
-                self.item_list.toggle_mark();
-                self.item_list.move_highlight_backward();
-                self.screen.update(self.get_screen_data());
-            }
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 if self.query_editor.as_ref().len() > 0 {
