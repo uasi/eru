@@ -5,7 +5,7 @@ use item::Item;
 #[derive(Clone)]
 pub struct ScreenData {
     pub cursor_index: usize,
-    pub highlighted_row: usize,
+    pub highlighted_row: Option<usize>,
     pub item_list_len: usize,
     pub items: Vec<Item>,
     pub query_string: Arc<String>,

@@ -48,8 +48,8 @@ pub struct Gutter;
 
 impl WindowImpl for Gutter {
     fn draw(&self, win: nc::WINDOW, _r: Rect, sd: &ScreenData) {
-        if sd.items.len() > 0 {
-            let y = sd.highlighted_row as i32;
+        if let Some(row) = sd.highlighted_row {
+            let y = row as i32;
             nc::mvwaddstr(win, y, 0, ">");
         }
         for row in sd.marked_rows.iter() {

@@ -6,23 +6,24 @@ use std::ops::Range;
 pub struct ItemList {
     clipping_range_max_len: usize,
     clipping_range_start: usize,
-    highlighted_row: usize,
+    highlighted_row: Option<usize>,
     line_indices: Box<Indices>,
     marked_line_indices: BTreeSet<usize>,
 }
 
 impl ItemList {
     pub fn new(clipping_range_max_len: usize) -> Self {
+        assert!(clipping_range_max_len > 0);
         ItemList {
             clipping_range_max_len: clipping_range_max_len,
             clipping_range_start: 0,
-            highlighted_row: 0,
+            highlighted_row: None,
             line_indices: Box::new(0..0),
             marked_line_indices: BTreeSet::new(),
         }
     }
 
-    pub fn highlighted_row(&self) -> usize {
+    pub fn highlighted_row(&self) -> Option<usize> {
         self.highlighted_row
     }
 
@@ -40,10 +41,10 @@ impl ItemList {
     pub fn selected_line_indices(&self) -> Vec<usize> {
         match self.marked_line_indices.len() {
             0 => {
-                match self.clipping_range_len() {
-                    0 => Vec::new(),
-                    _ => {
-                        let i = self.clipping_range_start + self.highlighted_row;
+                match self.highlighted_row {
+                    None => Vec::new(),
+                    Some(row) => {
+                        let i = self.clipping_range_start + row;
                         vec![self.line_indices.at(i)]
                     }
                 }
@@ -62,8 +63,8 @@ impl ItemList {
     }
 
     pub fn toggle_mark(&mut self) {
-        if self.clipping_range_len() > 0 {
-            let i = self.clipping_range_start + self.highlighted_row;
+        if let Some(row) = self.highlighted_row {
+            let i = self.clipping_range_start + row;
             let line_index = self.line_indices.at(i);
             if !self.marked_line_indices.remove(&line_index) {
                 self.marked_line_indices.insert(line_index);
@@ -80,19 +81,23 @@ impl ItemList {
     }
 
     pub fn move_highlight_backward(&mut self) {
-        if self.highlighted_row == 0 {
-            self.scroll_backward();
-            return;
+        if let Some(row) = self.highlighted_row {
+            if row == 0 {
+                self.scroll_backward();
+                return;
+            }
+            self.highlighted_row = Some(row - 1);
         }
-        self.highlighted_row -= 1;
     }
 
     pub fn move_highlight_forward(&mut self) {
-        if Some(self.highlighted_row) == self.max_row() {
-            self.scroll_forward();
-            return;
+        if let Some(row) = self.highlighted_row {
+            if Some(row) == self.max_row() {
+                self.scroll_forward();
+                return;
+            }
+            self.highlighted_row = Some(row + 1);
         }
-        self.highlighted_row += 1;
     }
 
     pub fn scroll_backward(&mut self) {
@@ -119,13 +124,22 @@ impl ItemList {
                 self.clipping_range_start -= diff;
             }
         }
-        if let Some(max_row) = self.max_row() {
-            if self.highlighted_row > max_row {
-                self.highlighted_row = max_row;
+        match (self.highlighted_row, self.max_row()) {
+            (Some(row), Some(max_row)) if row > max_row => {
+                self.highlighted_row = Some(max_row);
             }
+            (None, Some(_)) => {
+                self.highlighted_row = Some(0);
+            }
+            (_, None) => {
+                self.highlighted_row = None;
+            }
+            (_, _) => { }
         }
+        debug_assert!(
+            (self.highlighted_row.is_some() && self.max_row().is_some()) ||
+            (self.highlighted_row.is_none() && self.max_row().is_none()));
     }
-
 
     fn clipping_range_end(&self) -> usize {
         self.clipping_range_start + self.clipping_range_len()
