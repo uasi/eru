@@ -23,7 +23,7 @@ impl App {
         }
     }
 
-    pub fn start(self) -> Option<Vec<Arc<Line>>> {
+    pub fn start(self) {
         screen::initialize();
 
         let (commander_tx, commander_rx) = channel();
@@ -69,6 +69,19 @@ impl App {
 
         let result = coordinator.start();
         screen::finalize();
-        result
+        print_result(result);
+    }
+}
+
+fn print_result(result: Option<Vec<Arc<Line>>>) {
+    use std::io::{self, Write};
+    if let Some(lines) = result {
+        let stdout_ = io::stdout();
+        let mut stdout = stdout_.lock();
+        for line in lines {
+            stdout.write_all(line.as_ref()).unwrap();
+            stdout.write_all("\n".as_ref()).unwrap();
+        }
+        stdout.flush().unwrap();
     }
 }
