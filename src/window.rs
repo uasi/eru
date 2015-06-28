@@ -52,7 +52,7 @@ impl WindowImpl for Gutter {
             let y = sd.highlighted_row as i32;
             nc::mvwaddstr(win, y, 0, ">");
         }
-        for row in sd.selected_rows.iter() {
+        for row in sd.marked_rows.iter() {
             let y = *row as i32;
             nc::mvwaddstr(win, y, 1, ">");
         }

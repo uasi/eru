@@ -8,7 +8,7 @@ pub struct ItemList {
     clipping_range_start: usize,
     highlighted_row: usize,
     line_indices: Box<Indices>,
-    selected_line_indices: BTreeSet<usize>,
+    marked_line_indices: BTreeSet<usize>,
 }
 
 impl ItemList {
@@ -18,7 +18,7 @@ impl ItemList {
             clipping_range_start: 0,
             highlighted_row: 0,
             line_indices: Box::new(0..0),
-            selected_line_indices: BTreeSet::new(),
+            marked_line_indices: BTreeSet::new(),
         }
     }
 
@@ -37,8 +37,8 @@ impl ItemList {
             .collect()
     }
 
-    pub fn selected_or_highlighted_line_indices(&self) -> Vec<usize> {
-        match self.selected_line_indices.len() {
+    pub fn selected_line_indices(&self) -> Vec<usize> {
+        match self.marked_line_indices.len() {
             0 => {
                 match self.clipping_range_len() {
                     0 => Vec::new(),
@@ -48,25 +48,25 @@ impl ItemList {
                     }
                 }
             }
-            _ => self.selected_line_indices.iter().cloned().collect(),
+            _ => self.marked_line_indices.iter().cloned().collect(),
         }
     }
 
-    pub fn selected_rows(&self) -> Vec<usize> {
+    pub fn marked_rows(&self) -> Vec<usize> {
         self.line_indices_in_clipping_range().iter()
             .enumerate()
             .filter_map(|(i, idx)| {
-                if self.selected_line_indices.contains(idx) { Some(i) } else { None }
+                if self.marked_line_indices.contains(idx) { Some(i) } else { None }
             })
             .collect()
     }
 
-    pub fn toggle_selection_at_highlighted_row(&mut self) {
+    pub fn toggle_mark(&mut self) {
         if self.clipping_range_len() > 0 {
             let i = self.clipping_range_start + self.highlighted_row;
             let line_index = self.line_indices.at(i);
-            if !self.selected_line_indices.remove(&line_index) {
-                self.selected_line_indices.insert(line_index);
+            if !self.marked_line_indices.remove(&line_index) {
+                self.marked_line_indices.insert(line_index);
             }
         }
     }
