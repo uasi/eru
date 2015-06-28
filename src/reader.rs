@@ -53,11 +53,13 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>) -> thr
         thread::park();
         let mut buf_reader = BufReader::new(config.input_source());
         loop {
-            let mut buf = String::new();
-            let res = buf_reader.read_line(&mut buf);
+            let mut buf = Vec::new();
+            let res = buf_reader.read_until(0xA, &mut buf);
             match res {
                 Ok(_) if buf.len() > 0 => {
-                    buf.pop().unwrap(); // chomp newline
+                    if buf.last() == Some(&0xA) {
+                        buf.pop().unwrap();
+                    }
                     let mut chunk = chunk.lock().unwrap();
                     chunk.push(Arc::new(Line(buf)));
                     drop(chunk);

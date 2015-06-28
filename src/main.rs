@@ -24,13 +24,19 @@ mod state;
 mod thread_util;
 mod window;
 
+use std::io::{self, Write};
+
 use app::App;
 
 fn main() {
     let app = App::new();
     if let Some(lines) = app.start() {
+        let stdout_ = io::stdout();
+        let mut stdout = stdout_.lock();
         for line in lines {
-            println!("{}", line.as_ref());
+            stdout.write_all(line.as_ref()).unwrap();
+            stdout.write_all("\n".as_ref()).unwrap();
         }
+        stdout.flush();
     }
 }
