@@ -3,14 +3,14 @@ use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
 use line_storage::LineStorage;
-use search::{SearchRequest, SearchResponse};
+use search::{Request, Response};
 
-pub enum SearcherInput {
-    Search(SearchRequest),
+pub enum Input {
+    Search(Request),
 }
 
-pub enum SearcherReply {
-    DidSearch(SearchResponse),
+pub enum Reply {
+    DidSearch(Response),
 }
 
 pub struct Searcher {
@@ -24,9 +24,9 @@ impl Searcher {
         }
     }
 
-    pub fn start(self, input_rx: Receiver<SearcherInput>, reply_tx: Sender<SearcherReply>) {
+    pub fn start(self, input_rx: Receiver<Input>, reply_tx: Sender<Reply>) {
         loop {
-            use self::SearcherInput::*;
+            use self::Input::*;
             let reply = match input_rx.recv() {
                 Ok(Search(request)) => self.search(request),
                 Err(_) => return,
@@ -35,8 +35,8 @@ impl Searcher {
         }
     }
 
-    fn search(&self, request: SearchRequest) -> SearcherReply {
-        let SearchRequest { query, start } = request;
+    fn search(&self, request: Request) -> Reply {
+        let Request { query, start } = request;
         let tests_per_req = 5000;
         let mut line_indices = Vec::new();
         let line_storage = self.line_storage.read().unwrap();
@@ -46,7 +46,7 @@ impl Searcher {
             }
         }
         let end = cmp::min(start + tests_per_req, line_storage.len());
-        let response = SearchResponse::new(query, line_indices, start..end);
-        SearcherReply::DidSearch(response)
+        let response = Response::new(query, line_indices, start..end);
+        Reply::DidSearch(response)
     }
 }

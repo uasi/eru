@@ -2,11 +2,11 @@ use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-use commander::CommanderEvent;
+use commander;
 use line::Line;
-use reader::ReaderEvent;
-use searcher::{SearcherInput, SearcherReply};
-use state::{StateInput, StateReply};
+use reader;
+use searcher;
+use state;
 
 const POLLING_INTERVAL_MS: u32 = 10;
 
@@ -16,22 +16,22 @@ enum LoopCond {
 }
 
 pub struct Coordinator {
-    commander_rx: Receiver<CommanderEvent>,
-    reader_rx: Receiver<ReaderEvent>,
-    searcher_input_tx: Sender<SearcherInput>,
-    searcher_reply_rx: Receiver<SearcherReply>,
-    state_input_tx: Sender<StateInput>,
-    state_reply_rx: Receiver<StateReply>,
+    commander_rx: Receiver<commander::Event>,
+    reader_rx: Receiver<reader::Event>,
+    searcher_input_tx: Sender<searcher::Input>,
+    searcher_reply_rx: Receiver<searcher::Reply>,
+    state_input_tx: Sender<state::Input>,
+    state_reply_rx: Receiver<state::Reply>,
 }
 
 impl Coordinator {
     pub fn new(
-        commander_rx: Receiver<CommanderEvent>,
-        reader_rx: Receiver<ReaderEvent>,
-        searcher_input_tx: Sender<SearcherInput>,
-        searcher_reply_rx: Receiver<SearcherReply>,
-        state_input_tx: Sender<StateInput>,
-        state_reply_rx: Receiver<StateReply>,
+        commander_rx: Receiver<commander::Event>,
+        reader_rx: Receiver<reader::Event>,
+        searcher_input_tx: Sender<searcher::Input>,
+        searcher_reply_rx: Receiver<searcher::Reply>,
+        state_input_tx: Sender<state::Input>,
+        state_reply_rx: Receiver<state::Reply>,
     ) -> Self
     {
         Coordinator {
@@ -74,7 +74,7 @@ impl Coordinator {
                 }
             }
             loop {
-                use state::StateReply::*;
+                use state::Reply::*;
                 match self.state_reply_rx.try_recv() {
                     Ok(Complete(lines)) => { return lines; }
                     Ok(reply)           => self.process_state_reply(reply),
@@ -87,44 +87,45 @@ impl Coordinator {
         None
     }
 
-    fn process_commander_event(&self, event: CommanderEvent) -> LoopCond {
-        use commander::CommanderEvent::*;
-        use state::StateInput;
+    fn process_commander_event(&self, event: commander::Event) -> LoopCond {
+        use commander::Event::*;
+        use state::Input;
         use self::LoopCond::{Break, Continue};
         match event {
             KeyDown(key) => {
-                self.state_input_tx.send(StateInput::PutKey(key)).is_ok() || return Break;
+                self.state_input_tx.send(Input::PutKey(key)).is_ok() || return Break;
             }
         }
         Continue
     }
 
-    fn process_reader_event(&self, event: ReaderEvent) {
-        use reader::ReaderEvent::*;
-        use state::StateInput;
+    fn process_reader_event(&self, event: reader::Event) {
+        use reader::Event::*;
+        use state::Input;
         match event {
             DidReadChunk => {
-                let _dont_care = self.state_input_tx.send(StateInput::UpdateScreen).is_ok();
+                let _dont_care = self.state_input_tx.send(Input::UpdateScreen).is_ok();
             }
         }
     }
 
-    fn process_searcher_reply(&self, reply: SearcherReply) {
-        use searcher::SearcherReply::*;
+    fn process_searcher_reply(&self, reply: searcher::Reply) {
+        use searcher::Reply::*;
+        use state::Input;
         match reply {
             DidSearch(response) => {
-                let _dont_care = self.state_input_tx.send(StateInput::PutSearchResponse(response)).is_ok();
+                let _dont_care = self.state_input_tx.send(Input::PutSearchResponse(response)).is_ok();
              }
         }
     }
 
-    fn process_state_reply(&self, reply: StateReply) {
-        use state::StateReply::*;
-        use searcher::SearcherInput;
+    fn process_state_reply(&self, reply: state::Reply) {
+        use state::Reply::*;
+        use searcher::Input;
         match reply {
             Complete(_) => unreachable!(),
             SendSearchRequest(request) => {
-                let _dont_care = self.searcher_input_tx.send(SearcherInput::Search(request)).is_ok();
+                let _dont_care = self.searcher_input_tx.send(Input::Search(request)).is_ok();
             }
         }
     }

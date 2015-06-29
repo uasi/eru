@@ -10,7 +10,7 @@ use line_storage::LineStorage;
 use query::QueryEditor;
 use screen::Screen;
 use screen_data::ScreenData;
-use search::{MatchInfo, SearchRequest, SearchResponse};
+use search::{MatchInfo, Request, Response};
 
 pub struct State {
     item_list: ItemList,
@@ -20,15 +20,15 @@ pub struct State {
     screen: Screen,
 }
 
-pub enum StateInput {
+pub enum Input {
     PutKey(Key),
-    PutSearchResponse(SearchResponse),
+    PutSearchResponse(Response),
     UpdateScreen,
 }
 
-pub enum StateReply {
+pub enum Reply {
     Complete(Option<Vec<Arc<Line>>>),
-    SendSearchRequest(SearchRequest),
+    SendSearchRequest(Request),
 }
 
 impl State {
@@ -42,7 +42,7 @@ impl State {
         }
     }
 
-    pub fn start(mut self, input_rx: Receiver<StateInput>, reply_tx: Sender<StateReply>) {
+    pub fn start(mut self, input_rx: Receiver<Input>, reply_tx: Sender<Reply>) {
         loop {
             match input_rx.recv() {
                 Ok(input) => {
@@ -56,10 +56,10 @@ impl State {
         }
     }
 
-    fn process_input(&mut self, input: StateInput) -> Option<StateReply> {
+    fn process_input(&mut self, input: Input) -> Option<Reply> {
         use key::Key;
-        use self::StateInput::*;
-        use self::StateReply::*;
+        use self::Input::*;
+        use self::Reply::*;
         match input {
             PutKey(Key::CtrlC) => {
                 return Some(Complete(None));
@@ -90,11 +90,11 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            let request = SearchRequest { query: self.query_editor.query(), start: end };
+                            let request = Request { query: self.query_editor.query(), start: end };
                             return Some(SendSearchRequest(request));
                         }
                     } else {
-                        let request = SearchRequest { query: self.query_editor.query(), start: 0 };
+                        let request = Request { query: self.query_editor.query(), start: 0 };
                         return Some(SendSearchRequest(request));
                     }
                 } else {
@@ -103,7 +103,7 @@ impl State {
                 }
             }
             PutSearchResponse(response) => {
-                let SearchResponse { query, match_info } = response;
+                let Response { query, match_info } = response;
                 let MatchInfo { line_indices, range } = match_info;
                 let query_string = query.as_ref().to_string();
                 self.line_index_cache.put(query_string.clone(), line_indices, range);
@@ -111,7 +111,7 @@ impl State {
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
-                    let request = SearchRequest { query: self.query_editor.query(), start: end };
+                    let request = Request { query: self.query_editor.query(), start: end };
                     return Some(SendSearchRequest(request));
                 }
             }
@@ -122,11 +122,11 @@ impl State {
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            let request = SearchRequest { query: self.query_editor.query(), start: end };
+                            let request = Request { query: self.query_editor.query(), start: end };
                             return Some(SendSearchRequest(request));
                         }
                     } else {
-                        let request = SearchRequest { query: self.query_editor.query(), start: 0 };
+                        let request = Request { query: self.query_editor.query(), start: 0 };
                         return Some(SendSearchRequest(request));
                     }
                 } else {

@@ -2,19 +2,19 @@ use std::ops::Range;
 
 use query::Query;
 
-pub struct SearchRequest {
+pub struct Request {
     pub query: Query,
     pub start: usize,
 }
 
-pub struct SearchResponse {
+pub struct Response {
     pub query: Query,
     pub match_info: MatchInfo,
 }
 
-impl SearchResponse {
+impl Response {
     pub fn new(query: Query, line_indices: Vec<usize>, range: Range<usize>) -> Self {
-        SearchResponse {
+        Response {
             query: query,
             match_info: MatchInfo {
                 line_indices: line_indices,

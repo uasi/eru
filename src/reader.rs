@@ -10,7 +10,7 @@ use thread_util::spawn_with_name;
 
 const DUMP_INTERVAL_MS: u32 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
 
-pub enum ReaderEvent {
+pub enum Event {
     DidReadChunk,
 }
 
@@ -32,8 +32,8 @@ impl Reader {
         }
     }
 
-    pub fn start(self, tx: Sender<ReaderEvent>) {
-        use self::ReaderEvent::*;
+    pub fn start(self, tx: Sender<Event>) {
+        use self::Event::*;
         self.reader.thread().unpark();
         loop {
             thread::sleep_ms(DUMP_INTERVAL_MS);
