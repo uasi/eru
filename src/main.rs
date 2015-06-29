@@ -1,3 +1,4 @@
+extern crate clap;
 extern crate libc;
 extern crate ncurses;
 extern crate unicode_width;

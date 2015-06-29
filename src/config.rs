@@ -1,5 +1,5 @@
+use clap::{App, Arg, ArgMatches};
 use libc::{c_int, isatty};
-use std::env;
 use std::io;
 use std::fs::File;
 
@@ -10,9 +10,9 @@ pub struct Config {
 
 impl Config {
     pub fn with_args() -> Self {
-        let first_arg = env::args().nth(1);
+        let m = get_arg_matches();
         Config {
-            input_file_path: first_arg,
+            input_file_path: m.value_of("INPUT").map(|s| s.to_string()),
         }
     }
 
@@ -26,6 +26,13 @@ impl Config {
         }
         Box::new(io::empty())
     }
+}
+
+fn get_arg_matches<'a>() -> ArgMatches<'a, 'a> {
+    App::new("eru")
+        .arg(Arg::with_name("INPUT")
+             .index(1))
+        .get_matches()
 }
 
 fn stdin_is_tty() -> bool {
