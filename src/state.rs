@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
+use config::Config;
 use item_list::ItemList;
 use key::Key;
 use line::Line;
@@ -31,12 +32,12 @@ pub enum StateReply {
 }
 
 impl State {
-    pub fn new(line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
+    pub fn new(config: &Config, line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
         State {
             item_list: ItemList::new(screen.list_view_height()),
             line_index_cache: LineIndexCache::new(),
             line_storage: line_storage,
-            query_editor: QueryEditor::new(),
+            query_editor: QueryEditor::new(config.initial_query().unwrap_or("")),
             screen: screen,
         }
     }

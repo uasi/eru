@@ -31,10 +31,10 @@ pub struct QueryEditor {
 }
 
 impl QueryEditor {
-    pub fn new() -> QueryEditor {
+    pub fn new<S: Into<String>>(string: S) -> QueryEditor {
         QueryEditor {
             cursor_position: 0,
-            string: String::new(),
+            string: string.into(),
         }
     }
 
