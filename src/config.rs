@@ -6,7 +6,7 @@ use std::fs::File;
 #[derive(Clone)]
 pub struct Config {
     initial_query: Option<String>,
-    pub input_file_path: Option<String>,
+    input_file_path: Option<String>,
 }
 
 impl Config {
