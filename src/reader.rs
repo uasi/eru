@@ -1,5 +1,6 @@
 use std::io::{BufRead, BufReader};
 use std::sync::{Arc, Mutex, RwLock};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
 use std::thread;
 
@@ -11,31 +12,34 @@ use thread_util::spawn_with_name;
 const DUMP_INTERVAL_MS: u32 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
 
 pub enum Event {
+    DidFinish,
     DidReadChunk,
 }
 
 pub struct Reader {
     chunk: Arc<Mutex<Vec<Arc<Line>>>>,
-    reader: thread::JoinHandle<()>,
+    is_finished: Arc<AtomicBool>,
     line_storage: Arc<RwLock<LineStorage>>,
+    reader: thread::JoinHandle<()>,
 }
 
 impl Reader {
     pub fn new(config: Config, line_storage: Arc<RwLock<LineStorage>>) -> Self {
         let chunk = Arc::new(Mutex::new(Vec::new()));
-        let chunk_ = chunk.clone();
-        let reader = spawn_parked_reader(config, chunk_);
+        let is_finished = Arc::new(AtomicBool::new(false));
+        let reader = spawn_parked_reader(config, chunk.clone(), is_finished.clone());
         Reader {
             chunk: chunk,
-            reader: reader,
+            is_finished: is_finished,
             line_storage: line_storage,
+            reader: reader,
         }
     }
 
     pub fn start(self, tx: Sender<Event>) {
         use self::Event::*;
         self.reader.thread().unpark();
-        loop {
+        while !self.is_finished.load(Ordering::Relaxed) {
             thread::sleep_ms(DUMP_INTERVAL_MS);
             let mut chunk = self.chunk.lock().unwrap();
             if chunk.len() > 0 {
@@ -45,10 +49,11 @@ impl Reader {
                 tx.send(DidReadChunk).is_ok() || return;
             }
         }
+        tx.send(DidFinish).is_ok() || return;
     }
 }
 
-fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>) -> thread::JoinHandle<()> {
+fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_finished: Arc<AtomicBool>) -> thread::JoinHandle<()> {
     spawn_with_name("reader::reader", move || {
         thread::park();
         let mut buf_reader = BufReader::new(config.input_source());
@@ -72,5 +77,6 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>) -> thr
                 }
             }
         }
+        is_finished.store(true, Ordering::Relaxed);
     })
 }

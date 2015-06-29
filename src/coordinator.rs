@@ -46,7 +46,17 @@ impl Coordinator {
 
     pub fn start(self) -> Option<Vec<Arc<Line>>> {
         use std::sync::mpsc::TryRecvError::Empty;
+        let mut reader_is_running = true;
         'EVENT_LOOP: loop {
+            while reader_is_running {
+                match self.reader_rx.try_recv() {
+                    Ok(event)  => self.process_reader_event(event),
+                    Err(Empty) => break,
+                    Err(_)     => {
+                        reader_is_running = false;
+                    },
+                }
+            }
             loop {
                 match self.commander_rx.try_recv() {
                     Ok(event) => {
@@ -58,13 +68,6 @@ impl Coordinator {
                     Err(Empty) => break,
                     Err(_)     => panic!("commander terminated unexpectedly"),
                 };
-            }
-            loop {
-                match self.reader_rx.try_recv() {
-                    Ok(event)  => self.process_reader_event(event),
-                    Err(Empty) => break,
-                    Err(_)     => panic!("reader terminated unexpectedly"),
-                }
             }
             loop {
                 match self.searcher_reply_rx.try_recv() {
@@ -103,6 +106,9 @@ impl Coordinator {
         use reader::Event::*;
         use state::Input;
         match event {
+            DidFinish => {
+                let _dont_care = self.state_input_tx.send(Input::ReaderDidFinish).is_ok();
+            }
             DidReadChunk => {
                 let _dont_care = self.state_input_tx.send(Input::UpdateScreen).is_ok();
             }

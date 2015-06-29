@@ -23,6 +23,7 @@ pub struct State {
 pub enum Input {
     PutKey(Key),
     PutSearchResponse(Response),
+    ReaderDidFinish,
     UpdateScreen,
 }
 
@@ -113,6 +114,11 @@ impl State {
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
                     let request = Request { query: self.query_editor.query(), start: end };
                     return Some(SendSearchRequest(request));
+                }
+            }
+            ReaderDidFinish => {
+                if self.line_storage.read().unwrap().len() == 0 {
+                    return Some(Complete(None));
                 }
             }
             UpdateScreen => {
