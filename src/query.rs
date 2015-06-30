@@ -37,7 +37,7 @@ impl QueryEditor {
         let string = string.into();
         QueryEditor {
             cursor_position: UnicodeWidthStr::width(AsRef::<str>::as_ref(&string)),
-            string: string.into(),
+            string: string,
         }
     }
 
