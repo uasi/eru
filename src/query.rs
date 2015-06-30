@@ -5,7 +5,7 @@ use pattern::{self, Pattern};
 
 pub struct Query {
     patterns: Vec<Pattern>,
-    string: String, // TODO: make Cow
+    string: String,
 }
 
 impl Query {

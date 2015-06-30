@@ -1,7 +1,7 @@
+use libc;
 use ncurses as nc;
 use std::ffi::CString;
 
-use libc;
 use libc_aux;
 use screen_data::ScreenData;
 use window::{Rect, Window};
