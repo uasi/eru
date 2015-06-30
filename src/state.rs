@@ -30,7 +30,7 @@ pub enum Input {
 }
 
 pub enum Reply {
-    Complete(Option<Vec<Arc<Line>>>),
+    Complete(Vec<Arc<Line>>),
     SendSearchRequest(Request),
 }
 
@@ -66,7 +66,7 @@ impl State {
         use self::Reply::*;
         match input {
             PutKey(Key::CtrlC) => {
-                return Some(Complete(None));
+                return Some(Complete(Vec::new()));
             }
             PutKey(Key::CtrlI) => {
                 self.item_list.toggle_mark();
@@ -76,7 +76,7 @@ impl State {
             PutKey(Key::CtrlM) => {
                 let indices = self.item_list.selected_line_indices();
                 let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
-                return Some(Complete(Some(items)));
+                return Some(Complete(items));
             }
             PutKey(Key::CtrlN) => {
                 self.item_list.move_highlight_forward();
@@ -121,7 +121,7 @@ impl State {
             }
             ReaderDidFinish => {
                 if self.line_storage.read().unwrap().len() == 0 {
-                    return Some(Complete(None));
+                    return Some(Complete(Vec::new()));
                 }
             }
             ResizeScreen => {

@@ -59,7 +59,7 @@ impl App {
             state.start(state_input_rx, state_reply_tx);
         });
 
-        let coordinator = Coordinator::new(
+        let result = Coordinator::new().start(
             commander_rx,
             reader_rx,
             searcher_input_tx,
@@ -67,8 +67,6 @@ impl App {
             state_input_tx,
             state_reply_rx,
         );
-
-        let result = coordinator.start();
         screen::finalize();
         print_result(result);
     }
