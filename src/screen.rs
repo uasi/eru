@@ -42,6 +42,18 @@ impl Screen {
     pub fn list_view_height(&self) -> usize {
         self.list_view.rect().height as usize
     }
+
+    pub fn resize(&mut self) {
+        // Resize stdscr.
+        nc::endwin();
+        nc::initscr();
+
+        let layout = Layout::new();
+        self.gutter.resize(layout.gutter_rect);
+        self.list_view.resize(layout.list_view_rect);
+        self.mini_buf.resize(layout.mini_buf_rect);
+        self.status_line.resize(layout.status_line_rect);
+    }
 }
 
 struct Layout {

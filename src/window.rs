@@ -35,6 +35,14 @@ impl Window {
         nc::wnoutrefresh(self.win);
     }
 
+    pub fn resize(&mut self, r: Rect) {
+        self.rect = r;
+        nc::mvwin(self.win, r.y, r.x);
+        unsafe {
+            wresize(self.win, r.height, r.width);
+        }
+    }
+
     pub fn rect(&self) -> Rect {
         self.rect
     }
@@ -99,7 +107,8 @@ pub struct StatusLine;
 
 impl WindowImpl for StatusLine {
     fn draw(&self, win: nc::WINDOW, _r: Rect, sd: &ScreenData) {
-        let s = format!("{}/{}", sd.item_list_len, sd.total_lines);
+        let msg = sd.status_message.as_ref().map(|s| s.as_ref()).unwrap_or("");
+        let s = format!("{}/{} {}", sd.item_list_len, sd.total_lines, msg);
         nc::mvwaddstr(win, 0, 0, &s);
     }
 }
@@ -127,4 +136,9 @@ fn slice_by_width(s: &str, slice_width: usize, is_cjk: bool) -> &str {
         bytes += ch.len_utf8();
     }
     &s[..bytes]
+}
+
+// ncurses-rs 5.73.0 does't provide this function yet.
+extern {
+    fn wresize(win: nc::WINDOW, lines: ::libc::c_int, columns: ::libc::c_int);
 }

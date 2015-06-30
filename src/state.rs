@@ -18,12 +18,14 @@ pub struct State {
     line_storage: Arc<RwLock<LineStorage>>,
     query_editor: QueryEditor,
     screen: Screen,
+    status_message: Option<String>, // would be used to print debug messages
 }
 
 pub enum Input {
     PutKey(Key),
     PutSearchResponse(Response),
     ReaderDidFinish,
+    ResizeScreen,
     UpdateScreen,
 }
 
@@ -40,6 +42,7 @@ impl State {
             line_storage: line_storage,
             query_editor: QueryEditor::new(config.initial_query().unwrap_or("")),
             screen: screen,
+            status_message: None,
         }
     }
 
@@ -121,6 +124,10 @@ impl State {
                     return Some(Complete(None));
                 }
             }
+            ResizeScreen => {
+                self.screen.resize();
+                self.screen.update(self.get_screen_data());
+            }
             UpdateScreen => {
                 if self.query_editor.as_ref().len() > 0 {
                     let query_string = self.query_editor.as_ref().to_string();
@@ -152,8 +159,9 @@ impl State {
             highlighted_row: self.item_list.highlighted_row(),
             item_list_len: self.item_list.len(),
             items: items,
-            query_string: Arc::new(self.query_editor.as_ref().to_string()),
             marked_rows: self.item_list.marked_rows(),
+            query_string: Arc::new(self.query_editor.as_ref().to_string()),
+            status_message: self.status_message.clone(),
             total_lines: self.line_storage.read().unwrap().len(),
         }
     }

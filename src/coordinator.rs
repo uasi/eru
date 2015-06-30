@@ -98,6 +98,9 @@ impl Coordinator {
             KeyDown(key) => {
                 self.state_input_tx.send(Input::PutKey(key)).is_ok() || return Break;
             }
+            SigWinch => {
+                self.state_input_tx.send(Input::ResizeScreen).is_ok() || return Break;
+            }
         }
         Continue
     }
