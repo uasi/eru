@@ -1,3 +1,5 @@
+use unicode_width::UnicodeWidthStr;
+
 use key::Key;
 use pattern::{self, Pattern};
 
@@ -32,8 +34,9 @@ pub struct QueryEditor {
 
 impl QueryEditor {
     pub fn new<S: Into<String>>(string: S) -> QueryEditor {
+        let string = string.into();
         QueryEditor {
-            cursor_position: 0,
+            cursor_position: UnicodeWidthStr::width(AsRef::<str>::as_ref(&string)),
             string: string.into(),
         }
     }
