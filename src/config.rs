@@ -7,6 +7,7 @@ use std::fs::File;
 pub struct Config {
     initial_query: Option<String>,
     input_file_path: Option<String>,
+    is_cjk: bool,
 }
 
 impl Config {
@@ -15,6 +16,7 @@ impl Config {
         Config {
             initial_query: m.value_of("query").map(|s| s.to_string()),
             input_file_path: m.value_of("INPUT").map(|s| s.to_string()),
+            is_cjk: m.is_present("cjk"),
         }
     }
 
@@ -32,6 +34,10 @@ impl Config {
         }
         Box::new(io::empty())
     }
+
+    pub fn is_cjk(&self) -> bool {
+        self.is_cjk
+    }
 }
 
 fn get_arg_matches<'a>() -> ArgMatches<'a, 'a> {
@@ -42,6 +48,8 @@ fn get_arg_matches<'a>() -> ArgMatches<'a, 'a> {
              .long("query")
              .short("q")
              .takes_value(true))
+        .arg(Arg::with_name("cjk")
+             .long("cjk"))
         .get_matches()
 }
 

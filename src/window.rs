@@ -97,7 +97,7 @@ impl WindowImpl for ListView {
         let num_lines = cmp::min(sd.items.len(), r.height as usize);
         for (y, item) in sd.items.iter().take(num_lines).enumerate() {
             let s = item.as_lossy_str();
-            let sliced = slice_by_width(s, r.width as usize, false);
+            let sliced = slice_by_width(s, r.width as usize, sd.is_cjk);
             nc::mvwaddstr(win, y as i32, 0, sliced);
         }
     }
@@ -126,7 +126,7 @@ fn slice_by_width(s: &str, slice_width: usize, is_cjk: bool) -> &str {
     let mut width = 0;
     for ch in s.chars() {
         let w = match is_cjk {
-            true  => UnicodeWidthChar::width_cjk(ch).unwrap_or(0),
+            true => UnicodeWidthChar::width_cjk(ch).unwrap_or(0),
             false => UnicodeWidthChar::width(ch).unwrap_or(0),
         };
         if width + w > slice_width {

@@ -33,10 +33,14 @@ pub struct QueryEditor {
 }
 
 impl QueryEditor {
-    pub fn new<S: Into<String>>(string: S) -> QueryEditor {
+    pub fn new<S: Into<String>>(string: S, is_cjk: bool) -> QueryEditor {
         let string = string.into();
+        let width = match is_cjk {
+            true => <str as UnicodeWidthStr>::width_cjk(&string),
+            false => <str as UnicodeWidthStr>::width(&string),
+        };
         QueryEditor {
-            cursor_position: UnicodeWidthStr::width(AsRef::<str>::as_ref(&string)),
+            cursor_position: width,
             string: string,
         }
     }

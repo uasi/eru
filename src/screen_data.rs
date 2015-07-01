@@ -6,6 +6,7 @@ use item::Item;
 pub struct ScreenData {
     pub cursor_index: usize,
     pub highlighted_row: Option<usize>,
+    pub is_cjk: bool,
     pub item_list_len: usize,
     pub items: Vec<Item>,
     pub marked_rows: Vec<usize>,

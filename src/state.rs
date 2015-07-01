@@ -13,6 +13,7 @@ use screen_data::ScreenData;
 use search::{MatchInfo, Request, Response};
 
 pub struct State {
+    is_cjk: bool,
     item_list: ItemList,
     line_index_cache: LineIndexCache,
     line_storage: Arc<RwLock<LineStorage>>,
@@ -37,10 +38,11 @@ pub enum Reply {
 impl State {
     pub fn new(config: &Config, line_storage: Arc<RwLock<LineStorage>>, screen: Screen) -> Self {
         State {
+            is_cjk: config.is_cjk(),
             item_list: ItemList::new(screen.list_view_height()),
             line_index_cache: LineIndexCache::new(),
             line_storage: line_storage,
-            query_editor: QueryEditor::new(config.initial_query().unwrap_or("")),
+            query_editor: QueryEditor::new(config.initial_query().unwrap_or(""), config.is_cjk()),
             screen: screen,
             status_message: None,
         }
@@ -157,6 +159,7 @@ impl State {
         ScreenData {
             cursor_index: self.query_editor.cursor_position(),
             highlighted_row: self.item_list.highlighted_row(),
+            is_cjk: self.is_cjk,
             item_list_len: self.item_list.len(),
             items: items,
             marked_rows: self.item_list.marked_rows(),
