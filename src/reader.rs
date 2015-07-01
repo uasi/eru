@@ -56,9 +56,10 @@ impl Reader {
 fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_finished: Arc<AtomicBool>) -> thread::JoinHandle<()> {
     spawn_with_name("reader::reader", move || {
         thread::park();
+        let mut buf = Vec::with_capacity(1024);
         let mut buf_reader = BufReader::new(config.input_source());
         loop {
-            let mut buf = Vec::new();
+            buf.clear();
             let res = buf_reader.read_until(0xA, &mut buf);
             match res {
                 Ok(_) if buf.len() > 0 => {
@@ -66,7 +67,7 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_fin
                         buf.pop().unwrap();
                     }
                     let mut chunk = chunk.lock().unwrap();
-                    chunk.push(Arc::new(Line::new(buf)));
+                    chunk.push(Arc::new(Line::new(buf.clone())));
                     drop(chunk);
                 }
                 Ok(_) => {
