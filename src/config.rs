@@ -42,6 +42,7 @@ impl Config {
 
 fn get_arg_matches<'a>() -> ArgMatches<'a, 'a> {
     App::new("eru")
+        .version(env!("CARGO_PKG_VERSION"))
         .arg(Arg::with_name("INPUT")
              .index(1))
         .arg(Arg::with_name("query")
