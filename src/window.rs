@@ -96,7 +96,7 @@ impl WindowImpl for ListView {
     fn draw(&self, win: nc::WINDOW, r: Rect, sd: &ScreenData) {
         let num_lines = cmp::min(sd.items.len(), r.height as usize);
         for (y, item) in sd.items.iter().take(num_lines).enumerate() {
-            let s = item.as_lossy_str();
+            let s = item.as_str();
             let sliced = slice_by_width(s, r.width as usize, sd.is_cjk);
             nc::mvwaddstr(win, y as i32, 0, sliced);
         }

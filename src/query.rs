@@ -16,7 +16,7 @@ impl Query {
         }
     }
 
-    pub fn test(&self, haystack: &str) -> bool {
+    pub fn test(&self, haystack: &[char]) -> bool {
         self.patterns.iter().all(|p| p.test(haystack))
     }
 }
