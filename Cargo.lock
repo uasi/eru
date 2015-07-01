@@ -2,7 +2,7 @@
 name = "eru"
 version = "0.1.0"
 dependencies = [
- "clap 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 1.0.0-beta (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "ncurses 5.73.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-width 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -15,7 +15,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "clap"
-version = "0.11.0"
+version = "1.0.0-beta"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "ansi_term 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
