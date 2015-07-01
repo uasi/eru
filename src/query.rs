@@ -16,7 +16,7 @@ impl Query {
         }
     }
 
-    pub fn test(&self, haystack: &[u8]) -> bool {
+    pub fn test(&self, haystack: &str) -> bool {
         self.patterns.iter().all(|p| p.test(haystack))
     }
 }

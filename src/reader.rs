@@ -66,7 +66,7 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_fin
                         buf.pop().unwrap();
                     }
                     let mut chunk = chunk.lock().unwrap();
-                    chunk.push(Arc::new(Line(buf)));
+                    chunk.push(Arc::new(Line::new(buf)));
                     drop(chunk);
                 }
                 Ok(_) => {
