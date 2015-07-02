@@ -37,7 +37,7 @@ impl Searcher {
 
     fn search(&self, request: Request) -> Reply {
         let Request { query, start } = request;
-        let tests_per_req = 5000;
+        let tests_per_req = 500_000;
         let mut line_indices = Vec::new();
         let line_storage = self.line_storage.read().unwrap();
         for (i, line) in line_storage.iter().enumerate().skip(start).take(tests_per_req) {
