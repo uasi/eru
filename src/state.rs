@@ -90,9 +90,9 @@ impl State {
             }
             PutKey(key) => {
                 self.query_editor.put_key(key);
-                if self.query_editor.as_ref().len() > 0 {
-                    let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(&query_string) {
+                let query_str = self.query_editor.as_ref();
+                if query_str.len() > 0 {
+                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
@@ -132,9 +132,9 @@ impl State {
                 self.screen.update(self.get_screen_data());
             }
             UpdateScreen => {
-                if self.query_editor.as_ref().len() > 0 {
-                    let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(&query_string) {
+                let query_str = self.query_editor.as_ref();
+                if query_str.len() > 0 {
+                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());

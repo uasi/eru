@@ -13,7 +13,7 @@ impl MatchInfoCache {
         }
     }
 
-    pub fn get(&self, query_string: &String) -> Option<&MatchInfo> {
+    pub fn get(&self, query_string: &str) -> Option<&MatchInfo> {
         self.cache.get(query_string)
     }
 
