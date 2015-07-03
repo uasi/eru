@@ -92,7 +92,8 @@ impl State {
                 self.query_editor.put_key(key);
                 if self.query_editor.as_ref().len() > 0 {
                     let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&(ref indices, end)) = self.line_index_cache.get(&query_string) {
+                    if let Some(&MatchInfo { line_indices: ref indices, ref range }) = self.line_index_cache.get(&query_string) {
+                        let end = range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
@@ -110,10 +111,10 @@ impl State {
             }
             PutSearchResponse(response) => {
                 let Response { query, match_info } = response;
-                let MatchInfo { line_indices, range } = match_info;
                 let query_string = query.as_ref().to_string();
-                self.line_index_cache.put(query_string.clone(), line_indices, range);
-                let &(ref line_indices, end) = self.line_index_cache.get(&query_string).unwrap();
+                self.line_index_cache.put(query_string.clone(), match_info);
+                let &MatchInfo { ref line_indices, ref range } = self.line_index_cache.get(&query_string).unwrap();
+                let end = range.end;
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
@@ -133,7 +134,8 @@ impl State {
             UpdateScreen => {
                 if self.query_editor.as_ref().len() > 0 {
                     let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&(ref indices, end)) = self.line_index_cache.get(&query_string) {
+                    if let Some(&MatchInfo { line_indices: ref indices, ref range }) = self.line_index_cache.get(&query_string) {
+                        let end = range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {

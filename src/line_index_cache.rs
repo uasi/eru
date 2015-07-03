@@ -1,8 +1,10 @@
 use std::collections::BTreeMap;
-use std::ops::Range;
+use std::collections::btree_map::Entry;
+
+use search::MatchInfo;
 
 pub struct LineIndexCache {
-    cache: BTreeMap<String, (Vec<usize>, usize)>,
+    cache: BTreeMap<String, MatchInfo>,
 }
 
 impl LineIndexCache {
@@ -12,19 +14,22 @@ impl LineIndexCache {
         }
     }
 
-    pub fn get(&self, query_string: &String) -> Option<&(Vec<usize>, usize)> {
+    pub fn get(&self, query_string: &String) -> Option<&MatchInfo> {
         self.cache.get(query_string)
     }
 
-    pub fn put(&mut self, query_string: String, line_indices: Vec<usize>, range: Range<usize>) {
-        if let Some((mut indices, end)) = self.cache.remove(&query_string) {
-            assert!(range.start <= end,
-                "range mismatch: query={:?} indices={:?} range={:?}, expected range.start<={:?}", query_string, line_indices, range, end);
-            let overlap_len = end - range.start;
-            indices.extend(line_indices.into_iter().skip(overlap_len));
-            self.cache.insert(query_string, (indices, range.end));
-            return;
+    pub fn put(&mut self, query_string: String, info: MatchInfo) {
+        match self.cache.entry(query_string) {
+            Entry::Occupied(entry) => {
+                let cached = entry.into_mut();
+                assert!(info.range.start <= cached.range.end);
+                let overlap_len = cached.range.end - info.range.start;
+                cached.line_indices.extend(info.line_indices.into_iter().skip(overlap_len));
+                cached.range.end = info.range.end;
+            }
+            Entry::Vacant(entry) => {
+                entry.insert(info);
+            }
         }
-        self.cache.insert(query_string, (line_indices, range.end));
     }
 }

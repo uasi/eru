@@ -24,6 +24,7 @@ impl Response {
     }
 }
 
+#[derive(Debug)]
 pub struct MatchInfo {
     pub line_indices: Vec<usize>,
     pub range: Range<usize>,
