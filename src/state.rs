@@ -5,8 +5,8 @@ use config::Config;
 use item_list::ItemList;
 use key::Key;
 use line::Line;
-use line_index_cache::LineIndexCache;
 use line_storage::LineStorage;
+use match_info_cache::MatchInfoCache;
 use query::QueryEditor;
 use screen::Screen;
 use screen_data::ScreenData;
@@ -15,7 +15,7 @@ use search::{MatchInfo, Request, Response};
 pub struct State {
     is_cjk: bool,
     item_list: ItemList,
-    line_index_cache: LineIndexCache,
+    match_info_cache: MatchInfoCache,
     line_storage: Arc<RwLock<LineStorage>>,
     query_editor: QueryEditor,
     screen: Screen,
@@ -40,7 +40,7 @@ impl State {
         State {
             is_cjk: config.is_cjk(),
             item_list: ItemList::new(screen.list_view_height()),
-            line_index_cache: LineIndexCache::new(),
+            match_info_cache: MatchInfoCache::new(),
             line_storage: line_storage,
             query_editor: QueryEditor::new(config.initial_query().unwrap_or(""), config.is_cjk()),
             screen: screen,
@@ -92,8 +92,8 @@ impl State {
                 self.query_editor.put_key(key);
                 if self.query_editor.as_ref().len() > 0 {
                     let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&MatchInfo { line_indices: ref indices, ref range }) = self.line_index_cache.get(&query_string) {
-                        let end = range.end;
+                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(&query_string) {
+                        let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
@@ -112,9 +112,9 @@ impl State {
             PutSearchResponse(response) => {
                 let Response { query, match_info } = response;
                 let query_string = query.as_ref().to_string();
-                self.line_index_cache.put(query_string.clone(), match_info);
-                let &MatchInfo { ref line_indices, ref range } = self.line_index_cache.get(&query_string).unwrap();
-                let end = range.end;
+                self.match_info_cache.insert(query_string.clone(), match_info);
+                let &MatchInfo { ref line_indices, ref index_range } = self.match_info_cache.get(&query_string).unwrap();
+                let end = index_range.end;
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
                 if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
@@ -134,8 +134,8 @@ impl State {
             UpdateScreen => {
                 if self.query_editor.as_ref().len() > 0 {
                     let query_string = self.query_editor.as_ref().to_string();
-                    if let Some(&MatchInfo { line_indices: ref indices, ref range }) = self.line_index_cache.get(&query_string) {
-                        let end = range.end;
+                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(&query_string) {
+                        let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {

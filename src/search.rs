@@ -13,12 +13,12 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn new(query: Query, line_indices: Vec<usize>, range: Range<usize>) -> Self {
+    pub fn new(query: Query, line_indices: Vec<usize>, index_range: Range<usize>) -> Self {
         Response {
             query: query,
             match_info: MatchInfo {
                 line_indices: line_indices,
-                range: range,
+                index_range: index_range,
             }
         }
     }
@@ -27,5 +27,5 @@ impl Response {
 #[derive(Debug)]
 pub struct MatchInfo {
     pub line_indices: Vec<usize>,
-    pub range: Range<usize>,
+    pub index_range: Range<usize>,
 }

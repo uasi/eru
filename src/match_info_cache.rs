@@ -3,13 +3,13 @@ use std::collections::btree_map::Entry;
 
 use search::MatchInfo;
 
-pub struct LineIndexCache {
+pub struct MatchInfoCache {
     cache: BTreeMap<String, MatchInfo>,
 }
 
-impl LineIndexCache {
+impl MatchInfoCache {
     pub fn new() -> Self {
-        LineIndexCache {
+        MatchInfoCache {
             cache: BTreeMap::new(),
         }
     }
@@ -18,14 +18,14 @@ impl LineIndexCache {
         self.cache.get(query_string)
     }
 
-    pub fn put(&mut self, query_string: String, info: MatchInfo) {
+    pub fn insert(&mut self, query_string: String, info: MatchInfo) {
         match self.cache.entry(query_string) {
             Entry::Occupied(entry) => {
                 let cached = entry.into_mut();
-                assert!(info.range.start <= cached.range.end);
-                let overlap_len = cached.range.end - info.range.start;
+                assert!(info.index_range.start <= cached.index_range.end);
+                let overlap_len = cached.index_range.end - info.index_range.start;
                 cached.line_indices.extend(info.line_indices.into_iter().skip(overlap_len));
-                cached.range.end = info.range.end;
+                cached.index_range.end = info.index_range.end;
             }
             Entry::Vacant(entry) => {
                 entry.insert(info);
