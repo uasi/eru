@@ -114,16 +114,8 @@ impl ItemList {
 
     fn set_line_indices_with_box<T: Indices>(&mut self, line_indices: Box<Indices>) {
         self.line_indices = line_indices;
-        let len = self.len();
-        let range_end = self.clipping_range_end();
-        if len < range_end {
-            let diff = range_end - len;
-            if diff > self.clipping_range_start {
-                self.clipping_range_start = 0;
-            } else {
-                self.clipping_range_start -= diff;
-            }
-        }
+        let overrun = self.clipping_range_end().saturating_sub(self.len());
+        self.clipping_range_start = self.clipping_range_start.saturating_sub(overrun);
         match (self.highlighted_row, self.max_row()) {
             (Some(row), Some(max_row)) if row > max_row => {
                 self.highlighted_row = Some(max_row);
