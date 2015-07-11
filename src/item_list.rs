@@ -176,7 +176,7 @@ impl Indices for Vec<usize> {
     }
 
     fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a> {
-        Box::new(self.iter().map(|i| *i))
+        Box::new(self.iter().cloned())
     }
 
     fn len(&self) -> usize {
