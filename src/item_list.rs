@@ -28,7 +28,7 @@ impl ItemList {
     }
 
     pub fn len(&self) -> usize {
-        self.line_indices.count()
+        self.line_indices.len()
     }
 
     pub fn line_indices_in_clipping_range(&self) -> Vec<usize> {
@@ -152,7 +152,7 @@ impl ItemList {
 pub trait Indices {
     fn at(&self, i: usize) -> usize;
     fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a>;
-    fn count(&self) -> usize;
+    fn len(&self) -> usize;
 }
 
 impl Indices for Range<usize> {
@@ -165,8 +165,8 @@ impl Indices for Range<usize> {
         Box::new(self.clone())
     }
 
-    fn count(&self) -> usize {
-        self.clone().count()
+    fn len(&self) -> usize {
+        <Self as ExactSizeIterator>::len(&self)
     }
 }
 
@@ -179,7 +179,7 @@ impl Indices for Vec<usize> {
         Box::new(self.iter().map(|i| *i))
     }
 
-    fn count(&self) -> usize {
-        self.len()
+    fn len(&self) -> usize {
+        Vec::len(&self)
     }
 }
