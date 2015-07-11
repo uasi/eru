@@ -73,11 +73,11 @@ impl ItemList {
     }
 
     pub fn set_line_indices(&mut self, line_indices: Vec<usize>) {
-        self.set_line_indices_with_box::<Vec<usize>>(Box::new(line_indices));
+        self.set_line_indices_with_box(Box::new(line_indices));
     }
 
     pub fn set_line_index_range(&mut self, range: Range<usize>) {
-        self.set_line_indices_with_box::<Range<usize>>(Box::new(range));
+        self.set_line_indices_with_box(Box::new(range));
     }
 
     pub fn move_highlight_backward(&mut self) {
@@ -112,7 +112,7 @@ impl ItemList {
         }
     }
 
-    fn set_line_indices_with_box<T: Indices>(&mut self, line_indices: Box<Indices>) {
+    fn set_line_indices_with_box(&mut self, line_indices: Box<Indices>) {
         self.line_indices = line_indices;
         let overrun = self.clipping_range_end().saturating_sub(self.len());
         self.clipping_range_start = self.clipping_range_start.saturating_sub(overrun);
