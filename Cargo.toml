@@ -3,6 +3,10 @@ name = "eru"
 version = "0.1.0"
 authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
 
+[[bin]]
+name = "eru"
+path = "src/main.rs"
+
 [dependencies]
 clap = "1.0.0"
 libc = "0.1.8"
