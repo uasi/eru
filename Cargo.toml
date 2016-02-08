@@ -8,7 +8,7 @@ name = "eru"
 path = "src/main.rs"
 
 [dependencies]
-clap = "1.0.0"
+clap = "2.0.0"
 libc = "0.1.8"
 unicode-width = "0.1.1"
 
