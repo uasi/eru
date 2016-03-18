@@ -50,7 +50,7 @@ fn install_sigwinch_handler_once() {
     INSTALL.call_once(|| {
         unsafe {
             let h = ::std::mem::transmute(sigwinch_handler);
-            libc::funcs::posix01::signal::signal(libc_aux::SIGWINCH, h);
+            libc::signal(libc_aux::SIGWINCH, h);
         }
     });
 }
