@@ -5,6 +5,7 @@ use std::sync::{ONCE_INIT, Once};
 use std::sync::atomic::{ATOMIC_BOOL_INIT, AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 use libc_aux;
 use key::Key;
@@ -35,7 +36,7 @@ impl Commander {
                     CAUGHT_SIGWINCH.store(false, Ordering::Relaxed);
                     let _dont_care = tx_.send(SigWinch).is_ok();
                 }
-                thread::sleep_ms(50);
+                thread::sleep(Duration::from_millis(50));
             }
         });
         let tty = File::open("/dev/tty").unwrap();

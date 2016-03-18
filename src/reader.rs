@@ -3,13 +3,14 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
 use std::thread;
+use std::time::Duration;
 
 use config::Config;
 use line::Line;
 use line_storage::LineStorage;
 use thread_util::spawn_with_name;
 
-const DUMP_INTERVAL_MS: u32 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
+const DUMP_INTERVAL_MS: u64 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
 
 pub enum Event {
     DidFinish,
@@ -40,7 +41,7 @@ impl Reader {
         use self::Event::*;
         self.reader.thread().unpark();
         while !self.is_finished.load(Ordering::Relaxed) {
-            thread::sleep_ms(DUMP_INTERVAL_MS);
+            thread::sleep(Duration::from_millis(DUMP_INTERVAL_MS));
             let mut chunk = self.chunk.lock().unwrap();
             if chunk.len() > 0 {
                 self.line_storage.write().unwrap().put_chunk(chunk.clone());
