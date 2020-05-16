@@ -49,7 +49,7 @@ impl Commander {
 fn install_sigwinch_handler_once() {
     INSTALL.call_once(|| {
         unsafe {
-            let h = ::std::mem::transmute(sigwinch_handler);
+            let h = sigwinch_handler as *mut libc::c_void as libc::sighandler_t;
             libc::signal(libc_aux::SIGWINCH, h);
         }
     });

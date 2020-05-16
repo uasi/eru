@@ -67,7 +67,7 @@ impl Layout {
     fn new() -> Layout {
         let mut max_y = 0i32;
         let mut max_x = 0i32;
-        nc::getmaxyx(nc::stdscr, &mut max_y, &mut max_x);
+        unsafe { nc::getmaxyx(nc::stdscr, &mut max_y, &mut max_x) };
 
         let gutter_width = 2;
         let mini_buf_height = 1;
