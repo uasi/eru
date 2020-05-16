@@ -1,5 +1,3 @@
-use std::ascii::AsciiExt;
-
 pub struct Pattern {
     chars: Vec<char>,
 }

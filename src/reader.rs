@@ -47,10 +47,12 @@ impl Reader {
                 self.line_storage.write().unwrap().put_chunk(chunk.clone());
                 chunk.clear();
                 drop(chunk);
-                tx.send(DidReadChunk).is_ok() || return;
+                if !tx.send(DidReadChunk).is_ok() {
+                    return;
+                }
             }
         }
-        tx.send(DidFinish).is_ok() || return;
+        let _ = tx.send(DidFinish);
     }
 }
 

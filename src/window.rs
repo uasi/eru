@@ -9,7 +9,7 @@ use screen_data::ScreenData;
 pub struct Window {
     rect: Rect,
     win: nc::WINDOW,
-    win_impl: Box<WindowImpl + Send>
+    win_impl: Box<dyn WindowImpl + Send>
 }
 
 impl Window {

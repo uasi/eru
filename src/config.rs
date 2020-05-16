@@ -24,7 +24,7 @@ impl Config {
         self.initial_query.as_ref().map(|s| s.as_ref())
     }
 
-    pub fn input_source(&self) -> Box<io::Read> {
+    pub fn input_source(&self) -> Box<dyn io::Read> {
         if let Some(ref path) = self.input_file_path {
             if let Ok(f) = File::open(path) {
                 return Box::new(f);

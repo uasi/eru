@@ -7,7 +7,7 @@ pub struct ItemList {
     clipping_range_max_len: usize,
     clipping_range_start: usize,
     highlighted_row: Option<usize>,
-    line_indices: Box<Indices>,
+    line_indices: Box<dyn Indices>,
     marked_line_indices: BTreeSet<usize>,
 }
 
@@ -112,7 +112,7 @@ impl ItemList {
         }
     }
 
-    fn set_line_indices_with_box(&mut self, line_indices: Box<Indices>) {
+    fn set_line_indices_with_box(&mut self, line_indices: Box<dyn Indices>) {
         self.line_indices = line_indices;
         let overrun = self.clipping_range_end().saturating_sub(self.len());
         self.clipping_range_start = self.clipping_range_start.saturating_sub(overrun);
@@ -151,7 +151,7 @@ impl ItemList {
 
 pub trait Indices {
     fn at(&self, i: usize) -> usize;
-    fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a>;
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a>;
     fn len(&self) -> usize;
 }
 
@@ -161,7 +161,7 @@ impl Indices for Range<usize> {
         i
     }
 
-    fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a> {
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a> {
         Box::new(self.clone())
     }
 
@@ -175,7 +175,7 @@ impl Indices for Vec<usize> {
         unsafe { *self.get_unchecked(i) }
     }
 
-    fn boxed_iter<'a>(&'a self) -> Box<Iterator<Item=usize> + 'a> {
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a> {
         Box::new(self.iter().cloned())
     }
 

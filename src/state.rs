@@ -54,7 +54,9 @@ impl State {
                 Ok(input) => {
                     let reply = self.process_input(input);
                     if let Some(reply) = reply {
-                        reply_tx.send(reply).is_ok() || break;
+                        if !reply_tx.send(reply).is_ok() {
+                            break;
+                        }
                     }
                 }
                 Err(_) => break,
@@ -63,7 +65,6 @@ impl State {
     }
 
     fn process_input(&mut self, input: Input) -> Option<Reply> {
-        use key::Key;
         use self::Input::*;
         use self::Reply::*;
         match input {

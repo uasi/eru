@@ -1,8 +1,8 @@
 use libc;
 use std::fs::File;
 use std::io::Read;
-use std::sync::{ONCE_INIT, Once};
-use std::sync::atomic::{ATOMIC_BOOL_INIT, AtomicBool, Ordering};
+use std::sync::{Once};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::Duration;
@@ -11,8 +11,8 @@ use libc_aux;
 use key::Key;
 use thread_util::spawn_with_name;
 
-static INSTALL: Once = ONCE_INIT;
-static CAUGHT_SIGWINCH: AtomicBool = ATOMIC_BOOL_INIT;
+static INSTALL: Once = Once::new();
+static CAUGHT_SIGWINCH: AtomicBool = AtomicBool::new(false);
 
 pub enum Event {
     KeyDown(Key),
