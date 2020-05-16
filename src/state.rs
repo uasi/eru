@@ -1,16 +1,16 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
-use config::Config;
-use item_list::ItemList;
-use key::Key;
-use line::Line;
-use line_storage::LineStorage;
-use match_info_cache::MatchInfoCache;
-use query::QueryEditor;
-use screen::Screen;
-use screen_data::ScreenData;
-use search::{MatchInfo, Request, Response};
+use crate::config::Config;
+use crate::item_list::ItemList;
+use crate::key::Key;
+use crate::line::Line;
+use crate::line_storage::LineStorage;
+use crate::match_info_cache::MatchInfoCache;
+use crate::query::QueryEditor;
+use crate::screen::Screen;
+use crate::screen_data::ScreenData;
+use crate::search::{MatchInfo, Request, Response};
 
 pub struct State {
     is_cjk: bool,

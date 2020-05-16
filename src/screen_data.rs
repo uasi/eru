@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use item::Item;
+use crate::item::Item;
 
 #[derive(Clone)]
 pub struct ScreenData {

@@ -2,10 +2,10 @@ use libc;
 use ncurses as nc;
 use std::ffi::CString;
 
-use libc_aux;
-use screen_data::ScreenData;
-use window::{Rect, Window};
-use window::{Gutter, ListView, MiniBuf, StatusLine};
+use crate::libc_aux;
+use crate::screen_data::ScreenData;
+use crate::window::{Rect, Window};
+use crate::window::{Gutter, ListView, MiniBuf, StatusLine};
 
 pub struct Screen {
     gutter: Window,

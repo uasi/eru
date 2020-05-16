@@ -35,7 +35,7 @@ pub enum Key {
 
 impl Key {
     pub fn from_u32(u: u32) -> Key {
-        use ::key::Key::*;
+        use self::Key::*;
         let ch = char::from_u32(u).unwrap();
         match ch {
             '\x01' => CtrlA,

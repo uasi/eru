@@ -1,7 +1,7 @@
 use unicode_width::UnicodeWidthStr;
 
-use key::Key;
-use pattern::{self, Pattern};
+use crate::key::Key;
+use crate::pattern::{self, Pattern};
 
 pub struct Query {
     patterns: Vec<Pattern>,
@@ -46,7 +46,7 @@ impl QueryEditor {
     }
 
     pub fn put_key(&mut self, key: Key) {
-        use key::Key::*;
+        use crate::key::Key::*;
         match key {
             CtrlA => {
                 self.cursor_position = 0;

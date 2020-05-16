@@ -2,6 +2,7 @@
 name = "eru"
 version = "0.1.0"
 authors = ["Tomoki Aonuma <uasi@uasi.jp>"]
+edition = "2018"
 
 [[bin]]
 name = "eru"
@@ -14,4 +15,4 @@ unicode-width = "0.1.1"
 
 [dependencies.ncurses]
 version = "5.73.0"
-default-features = false  # Disable wide support for OS X
+default-features = false  # Disable wide support for macOS

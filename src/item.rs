@@ -1,5 +1,5 @@
 use std::sync::Arc;
 
-use line::Line;
+use crate::line::Line;
 
 pub type Item = Arc<Line>;

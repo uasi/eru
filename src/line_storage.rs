@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use item::Item;
-use line::Line;
+use crate::item::Item;
+use crate::line::Line;
 
 #[derive(Clone)]
 pub struct LineStorage {

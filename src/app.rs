@@ -1,16 +1,16 @@
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
 
-use commander::Commander;
-use config::Config;
-use coordinator::Coordinator;
-use line::Line;
-use line_storage::LineStorage;
-use reader::Reader;
-use screen::{self, Screen};
-use searcher::Searcher;
-use state::State;
-use thread_util::spawn_with_name;
+use crate::commander::Commander;
+use crate::config::Config;
+use crate::coordinator::Coordinator;
+use crate::line::Line;
+use crate::line_storage::LineStorage;
+use crate::reader::Reader;
+use crate::screen::{self, Screen};
+use crate::searcher::Searcher;
+use crate::state::State;
+use crate::thread_util::spawn_with_name;
 
 pub struct App {
     config: Config,

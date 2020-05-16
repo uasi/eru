@@ -2,8 +2,8 @@ use std::cmp;
 use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
 
-use line_storage::LineStorage;
-use search::{Request, Response};
+use crate::line_storage::LineStorage;
+use crate::search::{Request, Response};
 
 pub enum Input {
     Search(Request),

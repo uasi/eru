@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use query::Query;
+use crate::query::Query;
 
 pub struct Request {
     pub query: Query,

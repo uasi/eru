@@ -4,7 +4,7 @@ use ncurses as nc;
 use std::cmp;
 use unicode_width::UnicodeWidthChar;
 
-use screen_data::ScreenData;
+use crate::screen_data::ScreenData;
 
 pub struct Window {
     rect: Rect,

@@ -5,10 +5,10 @@ use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::Duration;
 
-use config::Config;
-use line::Line;
-use line_storage::LineStorage;
-use thread_util::spawn_with_name;
+use crate::config::Config;
+use crate::line::Line;
+use crate::line_storage::LineStorage;
+use crate::thread_util::spawn_with_name;
 
 const DUMP_INTERVAL_MS: u64 = 20; // ~10,000 lines per dump on my laptop when piped to `find`
 

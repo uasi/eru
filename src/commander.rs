@@ -7,9 +7,9 @@ use std::sync::mpsc::Sender;
 use std::thread;
 use std::time::Duration;
 
-use libc_aux;
-use key::Key;
-use thread_util::spawn_with_name;
+use crate::libc_aux;
+use crate::key::Key;
+use crate::thread_util::spawn_with_name;
 
 static INSTALL: Once = Once::new();
 static CAUGHT_SIGWINCH: AtomicBool = AtomicBool::new(false);

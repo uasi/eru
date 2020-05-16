@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use search::MatchInfo;
+use crate::search::MatchInfo;
 
 pub struct MatchInfoCache {
     cache: BTreeMap<String, MatchInfo>,

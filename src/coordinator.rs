@@ -1,12 +1,12 @@
 use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender};
 
-use commander;
-use line::Line;
-use reader;
-use searcher;
-use state;
-use thread_util::spawn_with_name;
+use crate::commander;
+use crate::line::Line;
+use crate::reader;
+use crate::searcher;
+use crate::state;
+use crate::thread_util::spawn_with_name;
 
 pub struct Coordinator;
 
