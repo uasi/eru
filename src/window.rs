@@ -38,9 +38,7 @@ impl Window {
     pub fn resize(&mut self, r: Rect) {
         self.rect = r;
         nc::mvwin(self.win, r.y, r.x);
-        unsafe {
-            wresize(self.win, r.height, r.width);
-        }
+        nc::wresize(self.win, r.height, r.width);
     }
 
     pub fn rect(&self) -> Rect {
@@ -137,9 +135,4 @@ fn slice_by_width(s: &str, slice_width: usize, is_cjk: bool) -> &str {
         bytes += ch.len_utf8();
     }
     &s[..bytes]
-}
-
-// ncurses-rs 5.73.0 does't provide this function yet.
-extern {
-    fn wresize(win: nc::WINDOW, lines: ::libc::c_int, columns: ::libc::c_int);
 }
