@@ -14,8 +14,8 @@ impl Config {
     pub fn with_args() -> Self {
         let m = get_arg_matches();
         Config {
-            initial_query: m.value_of("query").map(|s| s.to_string()),
-            input_file_path: m.value_of("INPUT").map(|s| s.to_string()),
+            initial_query: m.value_of("query").map(|s| s.to_owned()),
+            input_file_path: m.value_of("INPUT").map(|s| s.to_owned()),
             is_cjk: m.is_present("cjk"),
         }
     }

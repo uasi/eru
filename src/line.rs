@@ -17,7 +17,7 @@ impl Line {
             }
             Err(error) => {
                 let bytes = error.into_bytes();
-                let lossy = String::from_utf8_lossy(&bytes).to_string();
+                let lossy = String::from_utf8_lossy(&bytes).into_owned();
                 let chars = lossy.chars().collect();
                 Line {
                     bytes,

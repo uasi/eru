@@ -107,7 +107,7 @@ impl State {
             }
             PutSearchResponse(response) => {
                 let Response { query, match_info } = response;
-                let query_string = query.as_ref().to_string();
+                let query_string = query.as_ref().to_owned();
                 self.match_info_cache.insert(query_string.clone(), match_info);
                 let &MatchInfo { ref line_indices, ref index_range } = self.match_info_cache.get(&query_string).unwrap();
                 let end = index_range.end;
@@ -161,7 +161,7 @@ impl State {
             item_list_len: self.item_list.len(),
             items,
             marked_rows: self.item_list.marked_rows(),
-            query_string: Arc::new(self.query_editor.as_ref().to_string()),
+            query_string: Arc::new(self.query_editor.as_ref().to_owned()),
             status_message: self.status_message.clone(),
             total_lines: self.line_storage.read().unwrap().len(),
         }
