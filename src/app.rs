@@ -78,7 +78,7 @@ fn print_result(result: Option<Vec<Arc<Line>>>) {
         let mut stdout = stdout_.lock();
         for line in lines {
             stdout.write_all(line.as_bytes()).unwrap();
-            stdout.write_all("\n".as_ref()).unwrap();
+            stdout.write_all(b"\n").unwrap();
         }
         stdout.flush().unwrap();
     }

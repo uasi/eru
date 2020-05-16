@@ -39,7 +39,7 @@ impl Line {
     pub fn as_str(&self) -> &str {
         match self.lossy_string {
             Some(ref s) => s,
-            None => std::str::from_utf8(<[u8]>::as_ref(&self.bytes)).unwrap(),
+            None => std::str::from_utf8(&self.bytes).unwrap(),
         }
     }
 }

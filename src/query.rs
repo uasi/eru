@@ -11,7 +11,7 @@ pub struct Query {
 impl Query {
     fn new(string: String) -> Self {
         Query {
-            patterns: pattern::patterns_from_str(string.as_ref()),
+            patterns: pattern::patterns_from_str(&string),
             string,
         }
     }
