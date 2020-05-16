@@ -1,5 +1,3 @@
-#![allow(improper_ctypes)] // for nc::WINDOW
-
 use ncurses as nc;
 use std::cmp;
 use unicode_width::UnicodeWidthChar;
