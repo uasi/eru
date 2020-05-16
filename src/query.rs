@@ -12,7 +12,7 @@ impl Query {
     fn new(string: String) -> Self {
         Query {
             patterns: pattern::patterns_from_str(string.as_ref()),
-            string: string,
+            string,
         }
     }
 
@@ -35,13 +35,14 @@ pub struct QueryEditor {
 impl QueryEditor {
     pub fn new<S: Into<String>>(string: S, is_cjk: bool) -> QueryEditor {
         let string = string.into();
-        let width = match is_cjk {
-            true => <str as UnicodeWidthStr>::width_cjk(&string),
-            false => <str as UnicodeWidthStr>::width(&string),
+        let width = if is_cjk {
+            <str as UnicodeWidthStr>::width_cjk(&string)
+         } else {
+            <str as UnicodeWidthStr>::width(&string)
         };
         QueryEditor {
             cursor_position: width,
-            string: string,
+            string,
         }
     }
 
@@ -84,7 +85,7 @@ impl QueryEditor {
             CtrlW => {
                 let cursor = self.cursor_position;
                 let word_end = self.string[0..cursor].rfind(|ch| ch != ' ').unwrap_or(0);
-                let word_start = self.string[0..word_end].rfind(' ').and_then(|i| Some(i + 1)).unwrap_or(0);
+                let word_start = self.string[0..word_end].rfind(' ').map(|i| i + 1).unwrap_or(0);
                 self.string.truncate(word_start);
                 self.cursor_position = word_start;
             }

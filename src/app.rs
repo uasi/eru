@@ -52,10 +52,9 @@ impl App {
             searcher.start(searcher_input_rx, searcher_reply_tx);
         });
 
-        let config = self.config.clone();
-        let line_storage_ = line_storage.clone();
+        let config = self.config;
         spawn_with_name("state", move || {
-            let state = State::new(&config, line_storage_, Screen::new());
+            let state = State::new(&config, line_storage, Screen::new());
             state.start(state_input_rx, state_reply_tx);
         });
 

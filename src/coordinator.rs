@@ -47,9 +47,8 @@ impl Coordinator {
 
         let handle = spawn_with_name("coordinator::state_reply", move || {
             while let Ok(reply) = state_reply_rx.recv() {
-                match process_state_reply(reply, &searcher_input_tx) {
-                    Some(lines) => return Some(lines),
-                    _ => (),
+                if let Some(lines) = process_state_reply(reply, &searcher_input_tx) {
+                    return Some(lines);
                 }
             }
             None

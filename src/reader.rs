@@ -30,10 +30,10 @@ impl Reader {
         let is_finished = Arc::new(AtomicBool::new(false));
         let reader = spawn_parked_reader(config, chunk.clone(), is_finished.clone());
         Reader {
-            chunk: chunk,
-            is_finished: is_finished,
-            line_storage: line_storage,
-            reader: reader,
+            chunk,
+            is_finished,
+            line_storage,
+            reader,
         }
     }
 
@@ -47,7 +47,7 @@ impl Reader {
                 self.line_storage.write().unwrap().put_chunk(chunk.clone());
                 chunk.clear();
                 drop(chunk);
-                if !tx.send(DidReadChunk).is_ok() {
+                if tx.send(DidReadChunk).is_err() {
                     return;
                 }
             }
@@ -65,7 +65,7 @@ fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_fin
             buf.clear();
             let res = buf_reader.read_until(0xA, &mut buf);
             match res {
-                Ok(_) if buf.len() > 0 => {
+                Ok(_) if !buf.is_empty() => {
                     if buf.last() == Some(&0xA) {
                         buf.pop().unwrap();
                     }

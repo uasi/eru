@@ -41,25 +41,20 @@ impl State {
             is_cjk: config.is_cjk(),
             item_list: ItemList::new(screen.list_view_height()),
             match_info_cache: MatchInfoCache::new(),
-            line_storage: line_storage,
+            line_storage,
             query_editor: QueryEditor::new(config.initial_query().unwrap_or(""), config.is_cjk()),
-            screen: screen,
+            screen,
             status_message: None,
         }
     }
 
     pub fn start(mut self, input_rx: Receiver<Input>, reply_tx: Sender<Reply>) {
-        loop {
-            match input_rx.recv() {
-                Ok(input) => {
-                    let reply = self.process_input(input);
-                    if let Some(reply) = reply {
-                        if !reply_tx.send(reply).is_ok() {
-                            break;
-                        }
-                    }
+        while let Ok(input) = input_rx.recv() {
+            let reply = self.process_input(input);
+            if let Some(reply) = reply {
+                if reply_tx.send(reply).is_err() {
+                    break;
                 }
-                Err(_) => break,
             }
         }
     }
@@ -92,7 +87,7 @@ impl State {
             PutKey(key) => {
                 self.query_editor.put_key(key);
                 let query_str = self.query_editor.as_ref();
-                if query_str.len() > 0 {
+                if !query_str.is_empty() {
                     if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
@@ -118,7 +113,7 @@ impl State {
                 let end = index_range.end;
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
-                if &query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
+                if query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
                     let request = Request { query: self.query_editor.query(), start: end };
                     return Some(SendSearchRequest(request));
                 }
@@ -134,7 +129,7 @@ impl State {
             }
             UpdateScreen => {
                 let query_str = self.query_editor.as_ref();
-                if query_str.len() > 0 {
+                if !query_str.is_empty() {
                     if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
@@ -164,7 +159,7 @@ impl State {
             highlighted_row: self.item_list.highlighted_row(),
             is_cjk: self.is_cjk,
             item_list_len: self.item_list.len(),
-            items: items,
+            items,
             marked_rows: self.item_list.marked_rows(),
             query_string: Arc::new(self.query_editor.as_ref().to_string()),
             status_message: self.status_message.clone(),

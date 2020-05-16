@@ -1,4 +1,3 @@
-use libc;
 use ncurses as nc;
 use std::ffi::CString;
 
@@ -22,10 +21,10 @@ impl Screen {
         let mini_buf = Window::new(MiniBuf, layout.mini_buf_rect);
         let status_line = Window::new(StatusLine, layout.status_line_rect);
         Screen {
-            gutter: gutter,
-            list_view: list_view,
-            mini_buf: mini_buf,
-            status_line: status_line,
+            gutter,
+            list_view,
+            mini_buf,
+            status_line,
         }
     }
 
@@ -102,10 +101,10 @@ impl Layout {
         };
 
         Layout {
-            gutter_rect: gutter_rect,
-            list_view_rect: list_view_rect,
-            mini_buf_rect: mini_buf_rect,
-            status_line_rect: status_line_rect,
+            gutter_rect,
+            list_view_rect,
+            mini_buf_rect,
+            status_line_rect,
         }
     }
 }

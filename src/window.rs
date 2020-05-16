@@ -18,7 +18,7 @@ impl Window {
         nc::leaveok(win, true);
         Window {
             rect: r,
-            win: win,
+            win,
             win_impl: Box::new(win_impl)
         }
     }
@@ -125,9 +125,10 @@ fn slice_by_width(s: &str, slice_width: usize, is_cjk: bool) -> &str {
     let mut bytes = 0;
     let mut width = 0;
     for ch in s.chars() {
-        let w = match is_cjk {
-            true => UnicodeWidthChar::width_cjk(ch).unwrap_or(0),
-            false => UnicodeWidthChar::width(ch).unwrap_or(0),
+        let w = if is_cjk {
+            UnicodeWidthChar::width_cjk(ch).unwrap_or(0)
+        } else {
+            UnicodeWidthChar::width(ch).unwrap_or(0)
         };
         if width + w > slice_width {
             break;

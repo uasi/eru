@@ -15,7 +15,7 @@ impl ItemList {
     pub fn new(clipping_range_max_len: usize) -> Self {
         assert!(clipping_range_max_len > 0);
         ItemList {
-            clipping_range_max_len: clipping_range_max_len,
+            clipping_range_max_len,
             clipping_range_start: 0,
             highlighted_row: None,
             line_indices: Box::new(0..0),

@@ -18,6 +18,6 @@ impl MatchInfoCache {
     }
 
     pub fn insert(&mut self, query_string: String, info: MatchInfo) {
-        self.cache.entry(query_string).or_insert(Default::default()).merge(info);
+        self.cache.entry(query_string).or_insert_with(Default::default).merge(info);
     }
 }

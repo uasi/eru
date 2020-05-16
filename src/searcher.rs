@@ -20,7 +20,7 @@ pub struct Searcher {
 impl Searcher {
     pub fn new(line_storage: Arc<RwLock<LineStorage>>) -> Self {
         Searcher {
-            line_storage: line_storage,
+            line_storage,
         }
     }
 

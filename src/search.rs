@@ -15,10 +15,10 @@ pub struct Response {
 impl Response {
     pub fn new(query: Query, line_indices: Vec<usize>, index_range: Range<usize>) -> Self {
         Response {
-            query: query,
+            query,
             match_info: MatchInfo {
-                line_indices: line_indices,
-                index_range: index_range,
+                line_indices,
+                index_range,
             }
         }
     }

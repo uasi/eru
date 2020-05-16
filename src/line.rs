@@ -1,5 +1,3 @@
-use std::mem;
-
 pub struct Line {
     bytes: Vec<u8>,
     chars: Vec<char>,
@@ -13,7 +11,7 @@ impl Line {
                 let chars = string.chars().collect();
                 Line {
                     bytes: string.into_bytes(),
-                    chars: chars,
+                    chars,
                     lossy_string: None,
                 }
             }
@@ -22,8 +20,8 @@ impl Line {
                 let lossy = String::from_utf8_lossy(&bytes).to_string();
                 let chars = lossy.chars().collect();
                 Line {
-                    bytes: bytes,
-                    chars: chars,
+                    bytes,
+                    chars,
                     lossy_string: Some(lossy),
                 }
             }
@@ -41,7 +39,7 @@ impl Line {
     pub fn as_str(&self) -> &str {
         match self.lossy_string {
             Some(ref s) => s,
-            None => unsafe { mem::transmute(<[u8]>::as_ref(&self.bytes)) },
+            None => std::str::from_utf8(<[u8]>::as_ref(&self.bytes)).unwrap(),
         }
     }
 }

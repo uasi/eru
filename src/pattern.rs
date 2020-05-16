@@ -15,7 +15,7 @@ pub fn patterns_from_str(s: &str) -> Vec<Pattern> {
 }
 
 fn test_fuzzy_ignorecase(haystack: &[char], needle: &[char]) -> bool {
-    debug_assert!(needle.len() > 0);
+    debug_assert!(!needle.is_empty());
     let mut nidx = 0;
     for ch in haystack.iter() {
         let ch = ch.to_ascii_lowercase();
