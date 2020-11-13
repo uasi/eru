@@ -7,19 +7,20 @@ use crate::screen_data::ScreenData;
 pub struct Window {
     rect: Rect,
     win: nc::WINDOW,
-    win_impl: Box<dyn WindowImpl + Send>
+    win_impl: Box<dyn WindowImpl + Send>,
 }
 
 impl Window {
     pub fn new<WI>(win_impl: WI, r: Rect) -> Window
-        where WI: WindowImpl + Send + 'static
+    where
+        WI: WindowImpl + Send + 'static,
     {
         let win = nc::newwin(r.height, r.width, r.y, r.x);
         nc::leaveok(win, true);
         Window {
             rect: r,
             win,
-            win_impl: Box::new(win_impl)
+            win_impl: Box::new(win_impl),
         }
     }
 

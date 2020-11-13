@@ -3,8 +3,8 @@ use std::ffi::CString;
 
 use crate::libc_aux;
 use crate::screen_data::ScreenData;
-use crate::window::{Rect, Window};
 use crate::window::{Gutter, ListView, MiniBuf, StatusLine};
+use crate::window::{Rect, Window};
 
 pub struct Screen {
     gutter: Window,
@@ -29,7 +29,14 @@ impl Screen {
     }
 
     pub fn update(&self, sd: ScreenData) {
-        for win in [&self.gutter, &self.list_view, &self.mini_buf, &self.status_line].iter() {
+        for win in [
+            &self.gutter,
+            &self.list_view,
+            &self.mini_buf,
+            &self.status_line,
+        ]
+        .iter()
+        {
             win.clear();
             win.draw(&sd);
             win.noutrefresh();

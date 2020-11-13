@@ -1,7 +1,7 @@
 use std::io::{BufRead, BufReader};
-use std::sync::{Arc, Mutex, RwLock};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
 use std::time::Duration;
 
@@ -56,7 +56,11 @@ impl Reader {
     }
 }
 
-fn spawn_parked_reader(config: Config, chunk: Arc<Mutex<Vec<Arc<Line>>>>, is_finished: Arc<AtomicBool>) -> thread::JoinHandle<()> {
+fn spawn_parked_reader(
+    config: Config,
+    chunk: Arc<Mutex<Vec<Arc<Line>>>>,
+    is_finished: Arc<AtomicBool>,
+) -> thread::JoinHandle<()> {
     spawn_with_name("reader::reader", move || {
         thread::park();
         let mut buf = Vec::with_capacity(1024);

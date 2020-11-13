@@ -10,9 +10,7 @@ pub struct LineStorage {
 
 impl LineStorage {
     pub fn new() -> Self {
-        LineStorage {
-            lines: Vec::new(),
-        }
+        LineStorage { lines: Vec::new() }
     }
 
     pub fn get_many_unchecked(&self, indices: Vec<usize>) -> Vec<Item> {

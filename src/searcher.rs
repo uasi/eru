@@ -1,6 +1,6 @@
 use std::cmp;
-use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, RwLock};
 
 use crate::line_storage::LineStorage;
 use crate::search::{Request, Response};
@@ -19,9 +19,7 @@ pub struct Searcher {
 
 impl Searcher {
     pub fn new(line_storage: Arc<RwLock<LineStorage>>) -> Self {
-        Searcher {
-            line_storage,
-        }
+        Searcher { line_storage }
     }
 
     pub fn start(self, input_rx: Receiver<Input>, reply_tx: Sender<Reply>) {
@@ -40,7 +38,12 @@ impl Searcher {
         let tests_per_req = 500_000;
         let mut line_indices = Vec::new();
         let line_storage = self.line_storage.read().unwrap();
-        for (i, line) in line_storage.iter().enumerate().skip(start).take(tests_per_req) {
+        for (i, line) in line_storage
+            .iter()
+            .enumerate()
+            .skip(start)
+            .take(tests_per_req)
+        {
             if query.test(line.as_chars()) {
                 line_indices.push(i);
             }

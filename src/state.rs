@@ -1,5 +1,5 @@
-use std::sync::{Arc, RwLock};
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::{Arc, RwLock};
 
 use crate::config::Config;
 use crate::item_list::ItemList;
@@ -73,7 +73,11 @@ impl State {
             }
             PutKey(Key::CtrlM) => {
                 let indices = self.item_list.selected_line_indices();
-                let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
+                let items = self
+                    .line_storage
+                    .read()
+                    .unwrap()
+                    .get_many_unchecked(indices);
                 return Some(Complete(items));
             }
             PutKey(Key::CtrlN) => {
@@ -88,33 +92,53 @@ impl State {
                 self.query_editor.put_key(key);
                 let query_str = self.query_editor.as_ref();
                 if !query_str.is_empty() {
-                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
+                    if let Some(&MatchInfo {
+                        line_indices: ref indices,
+                        ref index_range,
+                    }) = self.match_info_cache.get(query_str)
+                    {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            let request = Request { query: self.query_editor.query(), start: end };
+                            let request = Request {
+                                query: self.query_editor.query(),
+                                start: end,
+                            };
                             return Some(SendSearchRequest(request));
                         }
                     } else {
-                        let request = Request { query: self.query_editor.query(), start: 0 };
+                        let request = Request {
+                            query: self.query_editor.query(),
+                            start: 0,
+                        };
                         return Some(SendSearchRequest(request));
                     }
                 } else {
-                    self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
+                    self.item_list
+                        .set_line_index_range(0..self.line_storage.read().unwrap().len());
                     self.screen.update(self.get_screen_data());
                 }
             }
             PutSearchResponse(response) => {
                 let Response { query, match_info } = response;
                 let query_string = query.as_ref().to_owned();
-                self.match_info_cache.insert(query_string.clone(), match_info);
-                let &MatchInfo { ref line_indices, ref index_range } = self.match_info_cache.get(&query_string).unwrap();
+                self.match_info_cache
+                    .insert(query_string.clone(), match_info);
+                let &MatchInfo {
+                    ref line_indices,
+                    ref index_range,
+                } = self.match_info_cache.get(&query_string).unwrap();
                 let end = index_range.end;
                 self.item_list.set_line_indices(line_indices.clone());
                 self.screen.update(self.get_screen_data());
-                if query_string == self.query_editor.as_ref() && end < self.line_storage.read().unwrap().len() {
-                    let request = Request { query: self.query_editor.query(), start: end };
+                if query_string == self.query_editor.as_ref()
+                    && end < self.line_storage.read().unwrap().len()
+                {
+                    let request = Request {
+                        query: self.query_editor.query(),
+                        start: end,
+                    };
                     return Some(SendSearchRequest(request));
                 }
             }
@@ -130,20 +154,31 @@ impl State {
             UpdateScreen => {
                 let query_str = self.query_editor.as_ref();
                 if !query_str.is_empty() {
-                    if let Some(&MatchInfo { line_indices: ref indices, ref index_range }) = self.match_info_cache.get(query_str) {
+                    if let Some(&MatchInfo {
+                        line_indices: ref indices,
+                        ref index_range,
+                    }) = self.match_info_cache.get(query_str)
+                    {
                         let end = index_range.end;
                         self.item_list.set_line_indices(indices.clone());
                         self.screen.update(self.get_screen_data());
                         if end != self.line_storage.read().unwrap().len() {
-                            let request = Request { query: self.query_editor.query(), start: end };
+                            let request = Request {
+                                query: self.query_editor.query(),
+                                start: end,
+                            };
                             return Some(SendSearchRequest(request));
                         }
                     } else {
-                        let request = Request { query: self.query_editor.query(), start: 0 };
+                        let request = Request {
+                            query: self.query_editor.query(),
+                            start: 0,
+                        };
                         return Some(SendSearchRequest(request));
                     }
                 } else {
-                    self.item_list.set_line_index_range(0..self.line_storage.read().unwrap().len());
+                    self.item_list
+                        .set_line_index_range(0..self.line_storage.read().unwrap().len());
                     self.screen.update(self.get_screen_data());
                 }
             }
@@ -153,7 +188,11 @@ impl State {
 
     fn get_screen_data(&self) -> ScreenData {
         let indices = self.item_list.line_indices_in_clipping_range();
-        let items = self.line_storage.read().unwrap().get_many_unchecked(indices);
+        let items = self
+            .line_storage
+            .read()
+            .unwrap()
+            .get_many_unchecked(indices);
         ScreenData {
             cursor_index: self.query_editor.cursor_position(),
             highlighted_row: self.item_list.highlighted_row(),

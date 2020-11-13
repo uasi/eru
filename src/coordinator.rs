@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender};
+use std::sync::Arc;
 
 use crate::commander;
 use crate::line::Line;
@@ -23,8 +23,7 @@ impl Coordinator {
         searcher_reply_rx: Receiver<searcher::Reply>,
         state_input_tx: Sender<state::Input>,
         state_reply_rx: Receiver<state::Reply>,
-    ) -> Option<Vec<Arc<Line>>>
-    {
+    ) -> Option<Vec<Arc<Line>>> {
         let state_input_tx_ = state_input_tx.clone();
         spawn_with_name("coordinator::commander_event", move || {
             while let Ok(event) = commander_rx.recv() {
@@ -90,17 +89,18 @@ fn process_searcher_reply(reply: searcher::Reply, tx: &Sender<state::Input>) {
     match reply {
         DidSearch(response) => {
             let _ = tx.send(PutSearchResponse(response)).is_ok();
-         }
+        }
     }
 }
 
-fn process_state_reply(reply: state::Reply, tx: &Sender<searcher::Input>) -> Option<Vec<Arc<Line>>> {
-    use state::Reply::*;
+fn process_state_reply(
+    reply: state::Reply,
+    tx: &Sender<searcher::Input>,
+) -> Option<Vec<Arc<Line>>> {
     use searcher::Input::*;
+    use state::Reply::*;
     match reply {
-        Complete(lines) => {
-            Some(lines)
-        }
+        Complete(lines) => Some(lines),
         SendSearchRequest(request) => {
             let _ = tx.send(Search(request)).is_ok();
             None

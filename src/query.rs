@@ -37,7 +37,7 @@ impl QueryEditor {
         let string = string.into();
         let width = if is_cjk {
             <str as UnicodeWidthStr>::width_cjk(&string)
-         } else {
+        } else {
             <str as UnicodeWidthStr>::width(&string)
         };
         QueryEditor {
@@ -85,7 +85,10 @@ impl QueryEditor {
             CtrlW => {
                 let cursor = self.cursor_position;
                 let word_end = self.string[0..cursor].rfind(|ch| ch != ' ').unwrap_or(0);
-                let word_start = self.string[0..word_end].rfind(' ').map(|i| i + 1).unwrap_or(0);
+                let word_start = self.string[0..word_end]
+                    .rfind(' ')
+                    .map(|i| i + 1)
+                    .unwrap_or(0);
                 self.string.truncate(word_start);
                 self.cursor_position = word_start;
             }
@@ -94,7 +97,7 @@ impl QueryEditor {
                 self.string.insert(cursor, ch);
                 self.cursor_position += 1;
             }
-            _  => { }
+            _ => {}
         }
     }
 

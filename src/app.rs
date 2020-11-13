@@ -1,5 +1,5 @@
-use std::sync::{Arc, RwLock};
 use std::sync::mpsc::channel;
+use std::sync::{Arc, RwLock};
 
 use crate::commander::Commander;
 use crate::config::Config;

@@ -32,7 +32,8 @@ impl ItemList {
     }
 
     pub fn line_indices_in_clipping_range(&self) -> Vec<usize> {
-        self.line_indices.boxed_iter()
+        self.line_indices
+            .boxed_iter()
             .skip(self.clipping_range_start)
             .take(self.clipping_range_end())
             .collect()
@@ -40,24 +41,27 @@ impl ItemList {
 
     pub fn selected_line_indices(&self) -> Vec<usize> {
         match self.marked_line_indices.len() {
-            0 => {
-                match self.highlighted_row {
-                    None => Vec::new(),
-                    Some(row) => {
-                        let i = self.clipping_range_start + row;
-                        vec![self.line_indices.at(i)]
-                    }
+            0 => match self.highlighted_row {
+                None => Vec::new(),
+                Some(row) => {
+                    let i = self.clipping_range_start + row;
+                    vec![self.line_indices.at(i)]
                 }
-            }
+            },
             _ => self.marked_line_indices.iter().cloned().collect(),
         }
     }
 
     pub fn marked_rows(&self) -> Vec<usize> {
-        self.line_indices_in_clipping_range().iter()
+        self.line_indices_in_clipping_range()
+            .iter()
             .enumerate()
             .filter_map(|(i, idx)| {
-                if self.marked_line_indices.contains(idx) { Some(i) } else { None }
+                if self.marked_line_indices.contains(idx) {
+                    Some(i)
+                } else {
+                    None
+                }
             })
             .collect()
     }
@@ -126,11 +130,12 @@ impl ItemList {
             (_, None) => {
                 self.highlighted_row = None;
             }
-            (_, _) => { }
+            (_, _) => {}
         }
         debug_assert!(
-            (self.highlighted_row.is_some() && self.max_row().is_some()) ||
-            (self.highlighted_row.is_none() && self.max_row().is_none()));
+            (self.highlighted_row.is_some() && self.max_row().is_some())
+                || (self.highlighted_row.is_none() && self.max_row().is_none())
+        );
     }
 
     fn clipping_range_end(&self) -> usize {
@@ -151,7 +156,7 @@ impl ItemList {
 
 pub trait Indices {
     fn at(&self, i: usize) -> usize;
-    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a>;
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item = usize> + 'a>;
     fn len(&self) -> usize;
 }
 
@@ -161,7 +166,7 @@ impl Indices for Range<usize> {
         i
     }
 
-    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a> {
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item = usize> + 'a> {
         Box::new(self.clone())
     }
 
@@ -175,7 +180,7 @@ impl Indices for Vec<usize> {
         unsafe { *self.get_unchecked(i) }
     }
 
-    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item=usize> + 'a> {
+    fn boxed_iter<'a>(&'a self) -> Box<dyn Iterator<Item = usize> + 'a> {
         Box::new(self.iter().cloned())
     }
 

@@ -1,7 +1,7 @@
 use clap::{App, Arg, ArgMatches};
 use libc::{c_int, isatty};
-use std::io;
 use std::fs::File;
+use std::io;
 
 #[derive(Clone)]
 pub struct Config {
@@ -43,14 +43,14 @@ impl Config {
 fn get_arg_matches<'a>() -> ArgMatches<'a> {
     App::new("eru")
         .version(env!("CARGO_PKG_VERSION"))
-        .arg(Arg::with_name("INPUT")
-             .index(1))
-        .arg(Arg::with_name("query")
-             .long("query")
-             .short("q")
-             .takes_value(true))
-        .arg(Arg::with_name("cjk")
-             .long("cjk"))
+        .arg(Arg::with_name("INPUT").index(1))
+        .arg(
+            Arg::with_name("query")
+                .long("query")
+                .short("q")
+                .takes_value(true),
+        )
+        .arg(Arg::with_name("cjk").long("cjk"))
         .get_matches()
 }
 

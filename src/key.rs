@@ -66,7 +66,7 @@ impl Key {
             '\x1A' => CtrlZ,
             '\x1B' => Esc,
             '\x7F' => Del,
-            _      => Char(ch),
+            _ => Char(ch),
         }
     }
 }

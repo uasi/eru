@@ -10,7 +10,9 @@ impl Pattern {
 
 pub fn patterns_from_str(s: &str) -> Vec<Pattern> {
     s.split_whitespace()
-        .map(|t| Pattern { chars: t.chars().collect() })
+        .map(|t| Pattern {
+            chars: t.chars().collect(),
+        })
         .collect()
 }
 
