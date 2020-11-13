@@ -9,10 +9,10 @@ name = "eru"
 path = "src/main.rs"
 
 [dependencies]
-clap = "2.0.0"
-libc = "0.2.0"
+clap = "2.33.3"
+libc = "0.2.80"
 unicode-width = "0.1.1"
 
 [dependencies.ncurses]
-version = "5.73.0"
+version = "5.99.0"
 default-features = false  # Disable wide support for macOS
